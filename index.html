@@ -190,7 +190,7 @@ function renderEditor(){
  }else if(selected.type==="event"){
   html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
   html+=field("itemDate","Date de l'événement",item.date,"number",'required');
-   html+=field("itemTextColor","Couleur du texte",item.textColor||"#344158","color");
+   html+='<div class="field"><label>Couleur du texte</label><div class="palette" role="group" aria-label="Couleur du texte">'+[{name:"Noir",value:"#202d43"},{name:"Bleu",value:"#2f6db3"},{name:"Vert",value:"#27834a"},{name:"Rouge (naissance de Jésus)",value:"#ef4036"},{name:"Violet",value:"#8055a5"}].map(function(c){return '<button type="button" class="color-choice '+((item.textColor||"#202d43")===c.value?"active":"")+'" data-event-text-color="'+c.value+'" title="'+c.name+'" aria-label="Choisir la couleur '+c.name+'" style="background:'+c.value+'"></button>'}).join("")+'</div></div>';
   html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
   html+='<div class="field"><label for="itemImage">Image de l’événement</label><input id="itemImage" name="itemImage" type="file" accept="image/*"><p class="field-help">Choisis une image sur ton ordinateur (5 Mo maximum). Elle sera intégrée à l’étiquette et aux exports.</p>'+(item.image?'<div class="event-image-preview"><img src="'+item.image+'" alt="Image de l’événement" style="max-width:120px;max-height:80px;display:block;margin:8px 0"><button class="btn small" type="button" id="removeEventImageBtn">Retirer l’image</button></div>':'')+'</div>';
   html+='<div class="field"><label for="itemPosition">Position de l\'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
@@ -464,7 +464,7 @@ function saveItemForm(ev){
  }else if(type==="event"){
   const name=value("itemName").trim(),date=Number(value("itemDate"));
   if(!name||!validYear(date)){toast("Nom ou date invalide. L'année 0 ne peut pas être saisie.",true);return}
-  item.title=name;item.date=date;item.textColor=value("itemTextColor")||item.textColor||"#344158";item.description=value("itemDescription")||"";item.desc=item.description;item.position=value("itemPosition")||"top";
+  item.title=name;item.date=date;item.textColor=f.querySelector("[data-event-text-color].active")?.dataset.eventTextColor||item.textColor||"#202d43";item.description=value("itemDescription")||"";item.desc=item.description;item.position=value("itemPosition")||"top";
  }else{
   const name=(value("itemName")||"").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
   if(!name){toast("Donne un nom au temps condensé.",true);return}
@@ -539,7 +539,8 @@ document.getElementById("editorContent").addEventListener("click",function(ev){
  const item=state.events.find(function(x){return String(x.id)===String(form.dataset.id)});if(!item)return;
  delete item.image;renderEditor();renderSvg();saveState();toast("Image retirée.");
 });
-document.getElementById("editorContent").addEventListener("input",function(ev){
+document.getElementById("editorContent").addEventListener("click",function(ev){const b=ev.target.closest("[data-event-text-color]");if(!b)return;const form=b.closest("#itemForm");if(!form)return;const item=state.events.find(function(x){return String(x.id)===String(form.dataset.id)});if(!item)return;item.textColor=b.dataset.eventTextColor;form.querySelectorAll("[data-event-text-color]").forEach(function(x){x.classList.toggle("active",x===b)});renderSvg();saveState();});
+ document.getElementById("editorContent").addEventListener("input",function(ev){
  const form=ev.target.closest("#itemForm");if(!form)return;
  const type=form.dataset.type,id=form.dataset.id;
  const arr=type==="period"?state.periods:type==="event"?state.events:state.compressions;
@@ -556,7 +557,7 @@ document.getElementById("editorContent").addEventListener("input",function(ev){
   }
  }else if(type==="event"){
   if(el.id==="itemName")item.title=el.value;
-   if(el.id==="itemTextColor")item.textColor=el.value;
+   if(el.matches("[data-event-text-color]")){item.textColor=el.dataset.eventTextColor;form.querySelectorAll("[data-event-text-color]").forEach(function(b){b.classList.toggle("active",b===el)});}
   if(el.id==="itemDate"&&el.value!==""&&validYear(Number(el.value)))item.date=Number(el.value);
   if(el.id==="itemDescription"){item.description=el.value;item.desc=el.value}
   if(el.id==="itemPosition")item.position=el.value;
