@@ -351,7 +351,7 @@ function renderSvg(){
    out.push('<circle cx="'+x+'" cy="'+(top+bh)+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
    const labelH=e.image?112:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
-   if(e.image)out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+8)+'" y="'+(labelY+6)+'" width="'+(boxW-16)+'" height="62" preserveAspectRatio="xMidYMid meet"/>');
+   if(e.image){const clipId="eventImageClip_"+String(e.id).replace(/[^a-zA-Z0-9_-]/g,"");out.push('<defs><clipPath id="'+clipId+'"><rect x="'+(bx+8)+'" y="'+(labelY+6)+'" width="'+(boxW-16)+'" height="62" rx="7" ry="7"/></clipPath></defs>');out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+8)+'" y="'+(labelY+6)+'" width="'+(boxW-16)+'" height="62" preserveAspectRatio="xMidYMid meet" clip-path="url(#'+clipId+')"/>');}
    out.push(text(bx+boxW/2,labelY+(e.image?83:15),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
    out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }
