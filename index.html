@@ -227,7 +227,10 @@ function getScale(){
   const a=unique[i],b=unique[i+1],ordDelta=Math.max(.0001,histOrd(b)-histOrd(a));
   const mid=(a+b)/2;
   const comp=state.compressions.find(function(c){return Number(c.start)<=mid&&Number(c.end)>=mid});
-  const weight=comp?28:Math.sqrt(ordDelta);
+  // Distribute one fixed visual width across all sub-intervals of a compression.
+  // This prevents adding a boundary inside a compressed span from making it wider.
+  const compOrdDelta=comp?Math.max(.0001,histOrd(Number(comp.end))-histOrd(Number(comp.start))):1;
+  const weight=comp?28*ordDelta/compOrdDelta:Math.sqrt(ordDelta);
   intervals.push({a:a,b:b,oa:histOrd(a),ob:histOrd(b),weight:weight,comp:comp});total+=weight
  }
  const X0=65,X1=1335,span=X1-X0;
