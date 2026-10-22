@@ -106,7 +106,7 @@ const STORAGE_KEY="frise-studio-project-v1";
 const COLORS=[
  {name:"Rose",value:"#e6b8ba"},{name:"Bleu",value:"#8cb4e2"},{name:"Ocre",value:"#cda071"},
  {name:"Jaune",value:"#ffd34f"},{name:"Doré",value:"#ffbd2e"},{name:"Vert",value:"#b9d5bd"},
- {name:"Lavande",value:"#c9c1e8"},{name:"Corail",value:"#f0a28a"},{name:"Gris",value:"#d5d8dc"}
+ {name:"Lavande",value:"#c9c1e8"},{name:"Corail",value:"#f0a28a"},{name:"Gris",value:"#d5d8dc"},{name:"Noir",value:"#000000"}
 ];
 function uid(){return "id-"+Math.random().toString(36).slice(2,10)+"-"+Date.now().toString(36)}
 function examples(){return {
@@ -216,7 +216,7 @@ function getScale(){
  function add(y){y=Number(y);if(y>=lo&&y<=hi&&Number.isFinite(y))vals.push(y)}
  state.periods.forEach(function(p){add(p.start);add(p.end)});
  state.compressions.forEach(function(c){add(c.start);add(c.end)});
- add(-1);add(1);
+
  const unique=Array.from(new Set(vals)).sort(function(a,b){return histOrd(a)-histOrd(b)});
  if(unique.length<2)return {map:function(){return 65},x0:65,x1:1335};
  const intervals=[];let total=0;
@@ -300,12 +300,7 @@ function renderSvg(){
   const x1=Math.max(scale.x0,scale.map(p.start)),x2=Math.min(scale.x1,scale.map(p.end));
   if(x2<=x1)return;
   out.push(pathPeriod(p,scale,top,bh));
-  // Drag handles let the user adjust period boundaries directly on the timeline.
-  out.push('<g data-period-id="'+escapeHtml(p.id)+'" style="cursor:ew-resize">');
-  out.push('<rect x="'+(x1-5)+'" y="'+(top-3)+'" width="10" height="'+(bh+6)+'" rx="3" fill="#fff" fill-opacity=".01" data-period-handle="start" data-period-id="'+escapeHtml(p.id)+'"/>');
-  out.push('<rect x="'+(x2-5)+'" y="'+(top-3)+'" width="10" height="'+(bh+6)+'" rx="3" fill="#fff" fill-opacity=".01" data-period-handle="end" data-period-id="'+escapeHtml(p.id)+'"/>');
-  out.push('<path d="M'+x1+' '+(top+bh/2-9)+' v18 M'+x2+' '+(top+bh/2-9)+' v18" stroke="#344158" stroke-width="1.5" opacity=".7" pointer-events="none"/>');
-  out.push('</g>');
+  // Les périodes ne sont plus redimensionnables directement sur la frise.
   const px=(x1+x2)/2,available=x2-x1;
   if(available>72){
    const name=p.name.toUpperCase();
@@ -366,7 +361,7 @@ function renderSvg(){
  // Les traits de rappel sont plus longs pour relier clairement l'étiquette à sa date exacte.
  const candidates=[{y:lo,label:fmtYear(lo,true),priority:10},{y:hi,label:fmtYear(hi,true),priority:10}];
  state.periods.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:5});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:5})});
- if(lo<=-1&&hi>=1){candidates.push({y:-1,label:"1 av. J.-C.",priority:8},{y:1,label:"1 ap. J.-C.",priority:8})}
+
  const seen=new Set(),ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
  const lanes=[];
  ticks.forEach(function(t){
@@ -576,8 +571,6 @@ function inverseScale(x){
  return Math.max(Number(state.timeline.start),Math.min(Number(state.timeline.end),year))
 }
 timelineSvg.addEventListener("pointerdown",function(e){
- const periodHandle=e.target.closest("[data-period-handle]");
- if(periodHandle){activeDrag={kind:"period",id:periodHandle.dataset.periodId,edge:periodHandle.dataset.periodHandle};timelineSvg.setPointerCapture(e.pointerId);e.preventDefault();return}
  const handle=e.target.closest("[data-break-handle]");
  if(handle){activeDrag={kind:"break",id:handle.dataset.breakId,edge:handle.dataset.breakHandle};timelineSvg.setPointerCapture(e.pointerId);e.preventDefault();return}
  const eventDot=e.target.closest("[data-event-dot]");
@@ -658,10 +651,7 @@ document.addEventListener("click",function(e){
 document.getElementById("addPeriodBtn").addEventListener("click",function(){addItem("period")});
 document.getElementById("addEventBtn").addEventListener("click",function(){addItem("event")});
 document.getElementById("addBreakBtn").addEventListener("click",function(){addItem("break")});
-document.getElementById("birthBtn").addEventListener("click",function(){
- if(state.timeline.start>-1||state.timeline.end<1){toast("Élargis la frise pour voir le passage entre 1 av. J.-C. et 1 ap. J.-C.",true);return}
- const bx=(getScale().map(-1)+getScale().map(1))/2;toast("Repère « Naissance de Jésus » : il marque le passage de 1 av. J.-C. à 1 ap. J.-C., sans année 0.")
-});
+document.getElementById("birthBtn").addEventListener("click",function(){toast("Les repères 1 av. J.-C. et 1 ap. J.-C. sont masqués sur la frise.")});
 document.getElementById("resetBtn").addEventListener("click",function(){
  if(!confirm("Remplacer la frise actuelle par les exemples initiaux ?"))return;
  state=examples();selected={type:"period",id:"p-pre"};refresh();toast("Exemples initiaux restaurés.")
