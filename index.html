@@ -225,7 +225,8 @@ function getScale(){
  const intervals=[];let total=0;
  for(let i=0;i<unique.length-1;i++){
   const a=unique[i],b=unique[i+1],ordDelta=Math.max(.0001,histOrd(b)-histOrd(a));
-  const comp=state.compressions.find(function(c){return Number(c.start)===a&&Number(c.end)===b});
+  const mid=(a+b)/2;
+  const comp=state.compressions.find(function(c){return Number(c.start)<=mid&&Number(c.end)>=mid});
   const weight=comp?28:Math.sqrt(ordDelta);
   intervals.push({a:a,b:b,oa:histOrd(a),ob:histOrd(b),weight:weight,comp:comp});total+=weight
  }
