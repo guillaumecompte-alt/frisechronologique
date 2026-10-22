@@ -390,6 +390,8 @@ function renderSvg(){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
   const x1=scale.map(c.start),x2=scale.map(c.end);
   const cue=c.color||"#66758b";
+  // Le segment condensé lui-même prend la couleur choisie, pas uniquement ses bordures.
+  out.push('<rect x="'+x1.toFixed(2)+'" y="'+top+'" width="'+Math.max(1,x2-x1).toFixed(2)+'" height="'+bh+'" fill="'+escapeHtml(cue)+'" fill-opacity=".22" stroke="'+escapeHtml(cue)+'" stroke-width="1.5" pointer-events="none"/>');
   if(c.style==="wave"){
    // Ondulations horizontales sur toute la longueur, plus ondulations verticales aux extrémités.
    [top+5,top+bh-5].forEach(function(y){let d="";for(let x=x1;x<=x2+0.1;x+=5){const yy=y+Math.sin((x-x1)/10*Math.PI)*2.6;d+=(x===x1?"M":" L")+x.toFixed(2)+" "+yy.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
