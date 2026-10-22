@@ -386,6 +386,7 @@ function renderSvg(){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
   const x1=scale.map(c.start),x2=scale.map(c.end);
   const cue="#000000";
+  const interior=c.color||"#66758b";
   if(false){
    // Forme ondulée fermée : seule son aire intérieure est teintée.
    // Le reste du rectangle garde son fond neutre.
