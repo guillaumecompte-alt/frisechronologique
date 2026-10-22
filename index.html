@@ -191,7 +191,7 @@ function renderEditor(){
   html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
   html+=field("itemDate","Date de l'événement",item.date,"number",'required');
   html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
-  html+='<div class="field"><label for="itemImage">Image de l’événement</label><input id="itemImage" name="itemImage" type="file" accept="image/*"><p class="field-help">Choisis une image sur ton ordinateur (2 Mo maximum). Elle sera intégrée à l’étiquette et aux exports.</p>'+(item.image?'<div class="event-image-preview"><img src="'+item.image+'" alt="Image de l’événement" style="max-width:120px;max-height:80px;display:block;margin:8px 0"><button class="btn small" type="button" id="removeEventImageBtn">Retirer l’image</button></div>':'')+'</div>';
+  html+='<div class="field"><label for="itemImage">Image de l’événement</label><input id="itemImage" name="itemImage" type="file" accept="image/*"><p class="field-help">Choisis une image sur ton ordinateur (5 Mo maximum). Elle sera intégrée à l’étiquette et aux exports.</p>'+(item.image?'<div class="event-image-preview"><img src="'+item.image+'" alt="Image de l’événement" style="max-width:120px;max-height:80px;display:block;margin:8px 0"><button class="btn small" type="button" id="removeEventImageBtn">Retirer l’image</button></div>':'')+'</div>';
   html+='<div class="field"><label for="itemPosition">Position de l\'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
  }else{
   html+=field("itemName","Nom du temps condensé",item.name||"Temps condensé","text",'maxlength="100" required');
@@ -340,11 +340,11 @@ function renderSvg(){
    const labelY=42+lane*35;
    out.push(line(x,top,bx+boxW/2,labelY+(e.image?78:40),'stroke="#8993a3" stroke-width="1.1"'));
    out.push('<circle cx="'+x+'" cy="'+top+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
-   const labelH=e.image?78:42;
+   const labelH=e.image?112:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
-   if(e.image)out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+boxW/2-15)+'" y="'+(labelY+5)+'" width="30" height="30" preserveAspectRatio="xMidYMid meet"/>');
-   out.push(text(bx+boxW/2,labelY+(e.image?49:16),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?66:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
+   if(e.image)out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+8)+'" y="'+(labelY+6)+'" width="'+(boxW-16)+'" height="62" preserveAspectRatio="xMidYMid meet"/>');
+   out.push(text(bx+boxW/2,labelY+(e.image?83:16),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }else{
    const labelY=314+lane*31;
    out.push(line(x,top+bh,bx+boxW/2,labelY,'stroke="#8993a3" stroke-width="1.1"'));
@@ -352,7 +352,7 @@ function renderSvg(){
    const labelH=e.image?78:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
    if(e.image)out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+boxW/2-15)+'" y="'+(labelY+5)+'" width="30" height="30" preserveAspectRatio="xMidYMid meet"/>');
-   out.push(text(bx+boxW/2,labelY+(e.image?49:15),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?83:15),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
    out.push(text(bx+boxW/2,labelY+(e.image?66:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }
  });
@@ -519,7 +519,7 @@ document.getElementById("editorContent").addEventListener("change",function(ev){
  if(el.id!=="itemImage")return;
  const file=el.files&&el.files[0];if(!file)return;
  if(!file.type.startsWith("image/")){toast("Choisis un fichier image.",true);el.value="";return}
- if(file.size>2*1024*1024){toast("L’image dépasse 2 Mo. Choisis un fichier plus léger.",true);el.value="";return}
+ if(file.size>5*1024*1024){toast("L’image dépasse 5 Mo. Choisis un fichier plus léger.",true);el.value="";return}
  const form=el.closest("#itemForm");if(!form)return;
  const item=state.events.find(function(x){return String(x.id)===String(form.dataset.id)});if(!item)return;
  const reader=new FileReader();
