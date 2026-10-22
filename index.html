@@ -188,6 +188,8 @@ function renderEditor(){
   html+='<div class="two-col">'+field("itemStart","Début (année)",item.start,"number",'required')+field("itemEnd","Fin (année)",item.end,"number",'required')+'</div>';
   html+='<div class="field"><label>Couleur de la période</label>'+paletteHtml(item.color)+'</div>';
   html+='<div class="field"><label for="itemFillStyle">Remplissage de la période</label><select id="itemFillStyle" name="itemFillStyle"><option value="solid" '+(item.fillStyle!=="hatched"?"selected":"")+'>Couleur pleine</option><option value="hatched" '+(item.fillStyle==="hatched"?"selected":"")+'>Couleur hachurée</option></select></div>';
+  html+='<div class="two-col"><div class="field"><label for="itemHatchColor">Couleur des hachures</label><input id="itemHatchColor" name="itemHatchColor" type="color" value="'+escapeHtml(item.hatchColor||item.color||"#66758b")+'"></div><div class="field"><label for="itemHatchBackground">Couleur du fond</label><input id="itemHatchBackground" name="itemHatchBackground" type="color" value="'+escapeHtml(item.hatchBackground||"#f4f1eb")+'"></div></div>';
+  html+='<p class="field-help">Les deux couleurs sont visibles sur la frise et se mettent à jour dès leur sélection.</p>';
   html+='<p class="field-help">Le nom apparaît à l\'intérieur de la bande colorée lorsque l\'espace le permet.</p>';
  }else if(selected.type==="event"){
   html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
@@ -280,9 +282,10 @@ function renderSvg(){
  out.push('<defs><linearGradient id="bgFade" x1="0" x2="1"><stop offset="0" stop-color="#fcfbf8"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#202d43" flood-opacity=".06"/></filter></defs>');
  state.periods.filter(function(p){return p.fillStyle==="hatched"}).forEach(function(p){
   const pid=String(p.id).replace(/[^a-zA-Z0-9_-]/g,"");
-  const pc=escapeHtml(p.color||"#66758b");
-  // Motif contrasté : fond très légèrement coloré et hachures nettes dans la couleur choisie.
-  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="'+pc+'" fill-opacity=".08"/><path d="M-3 3 L3 -3 M0 10 L10 0 M7 13 L13 7" fill="none" stroke="'+pc+'" stroke-opacity="1" stroke-width="3.2" stroke-linecap="square"/></pattern></defs>');
+  const hatch=escapeHtml(p.hatchColor||p.color||"#66758b");
+  const bg=escapeHtml(p.hatchBackground||"#f4f1eb");
+  // Motif SVG : fond et hachures sont configurables indépendamment.
+  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="'+bg+'"/><path d="M-3 3 L3 -3 M0 10 L10 0 M7 13 L13 7" fill="none" stroke="'+hatch+'" stroke-width="3.2" stroke-linecap="square"/></pattern></defs>');
  });
  out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="16" fill="url(#bgFade)"/>');
  out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
@@ -461,6 +464,8 @@ function saveItemForm(ev){
   if(!name){toast("Ajoute un nom à cette période.",true);return}
   if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : il faut deux années différentes, sans année 0, et un début avant la fin.",true);return}
   item.name=name;item.start=start;item.end=end;item.fillStyle=value("itemFillStyle")||"solid";
+  item.hatchColor=value("itemHatchColor")||item.hatchColor||item.color||"#66758b";
+  item.hatchBackground=value("itemHatchBackground")||item.hatchBackground||"#f4f1eb";
   const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
  }else if(type==="event"){
   const name=value("itemName").trim(),date=Number(value("itemDate"));
@@ -529,6 +534,8 @@ document.getElementById("editorContent").addEventListener("input",function(ev){
  if(type==="period"){
   if(el.id==="itemName")item.name=el.value;
   if(el.id==="itemFillStyle")item.fillStyle=el.value;
+  if(el.id==="itemHatchColor")item.hatchColor=el.value;
+  if(el.id==="itemHatchBackground")item.hatchBackground=el.value;
   if(el.id==="itemStart"||el.id==="itemEnd"){
    const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
    if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
