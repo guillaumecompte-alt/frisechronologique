@@ -197,6 +197,7 @@ function renderEditor(){
   html+=field("itemName","Nom du temps condensé",item.name||"Temps condensé","text",'maxlength="100" required');
   html+='<div class="field"><label for="itemStart">Début du segment</label><input id="itemStart" name="itemStart" type="number" step="1" value="'+item.start+'" required></div>';
   html+=field("itemEnd","Fin du segment",item.end,"number",'required');
+  html+='<div class="field"><label for="itemWeight">Largeur relative du temps condensé</label><input id="itemWeight" name="itemWeight" type="range" min="1" max="100" step="1" value="'+Math.max(1,Math.min(100,Number(item.weight)||28))+'"><p class="field-help">Réduis la valeur pour resserrer la zone ; augmente-la pour lui donner plus de largeur sur la frise.</p></div>';
   html+='<div class="field"><label>Couleur du temps condensé</label>'+paletteHtml(item.color||"#66758b")+'</div>';
   html+='<p class="field-help">Le segment indique visuellement que la durée est condensée. Il ne change aucune date.</p>';
  }
@@ -463,7 +464,7 @@ function saveItemForm(ev){
   const name=(value("itemName")||"").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
   if(!name){toast("Donne un nom au temps condensé.",true);return}
   if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : le début doit précéder la fin et l'année 0 n'est pas admise.",true);return}
-  item.name=name;item.start=start;item.end=end;item.style="dotted";
+  item.name=name;item.start=start;item.end=end;item.style="dotted";item.weight=Math.max(1,Math.min(100,Number(value("itemWeight"))||28));
   const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
  }
  renderLists();renderEditor();renderSvg();saveState();toast("Modifications enregistrées.")
@@ -555,6 +556,7 @@ document.getElementById("editorContent").addEventListener("input",function(ev){
   if(el.id==="itemPosition")item.position=el.value;
  }else{
   if(el.id==="itemName")item.name=el.value;
+  if(el.id==="itemWeight"){item.weight=Math.max(1,Math.min(100,Number(el.value)||28));renderSvg();saveState();return}
   if(el.id==="itemStart"||el.id==="itemEnd"){
    const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
    if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
