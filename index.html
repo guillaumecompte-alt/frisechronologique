@@ -483,6 +483,35 @@ function validateImport(v){
 }
 document.getElementById("timelineForm").addEventListener("submit",updateTimeline);
 document.getElementById("editorContent").addEventListener("submit",saveItemForm);
+// Live preview: keep the model and SVG in sync as names and dates are edited.
+// Do not re-render the editor here, so the cursor and in-progress form values remain intact.
+document.getElementById("editorContent").addEventListener("input",function(ev){
+ const form=ev.target.closest("#itemForm");if(!form)return;
+ const type=form.dataset.type,id=form.dataset.id;
+ const arr=type==="period"?state.periods:type==="event"?state.events:state.compressions;
+ const item=arr.find(function(x){return String(x.id)===String(id)});if(!item)return;
+ const el=ev.target;
+ if(type==="period"){
+  if(el.id==="itemName")item.name=el.value;
+  if(el.id==="itemStart"||el.id==="itemEnd"){
+   const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
+   if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
+  }
+ }else if(type==="event"){
+  if(el.id==="itemName")item.title=el.value;
+  if(el.id==="itemDate"&&el.value!==""&&validYear(Number(el.value)))item.date=Number(el.value);
+  if(el.id==="itemDescription"){item.description=el.value;item.desc=el.value}
+  if(el.id==="itemPosition")item.position=el.value;
+ }else{
+  if(el.id==="itemStart"||el.id==="itemEnd"){
+   const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
+   if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
+  }
+  if(el.id==="itemStyle")item.style=el.value;
+  if(el.id==="itemWeight")item.weight=Math.max(1,Math.min(100,Number(el.value)||28));
+ }
+ renderSvg();renderLists();saveState();
+});
 // Click the empty timeline band to create an event at that date. Drag a date marker to reposition it.
 const timelineSvg=document.getElementById("timelineSvg");
 let activeDrag=null, suppressTimelineClick=false;
