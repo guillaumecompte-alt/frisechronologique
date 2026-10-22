@@ -111,22 +111,10 @@ const COLORS=[
 function uid(){return "id-"+Math.random().toString(36).slice(2,10)+"-"+Date.now().toString(36)}
 function examples(){return {
  version:1,
- timeline:{title:"Les grandes périodes de l'Histoire",start:-2500000,end:2026},
- periods:[
-  {id:"p-pre",name:"PRÉHISTOIRE",start:-2500000,end:-3500,color:"#e6b8ba"},
-  {id:"p-ant",name:"ANTIQUITÉ",start:-3500,end:476,color:"#8cb4e2"},
-  {id:"p-med",name:"MOYEN ÂGE",start:476,end:1492,color:"#cda071"},
-  {id:"p-mod",name:"ÉPOQUE MODERNE",start:1492,end:1789,color:"#ffd34f"},
-  {id:"p-con",name:"ÉPOQUE CONTEMPORAINE",start:1789,end:2026,color:"#ffbd2e"}
- ],
- events:[
-  {id:"e-humains",title:"Premiers hommes",date:-2500000,description:"Repère très approximatif des premiers représentants du genre Homo.",position:"top"},
-  {id:"e-ecriture",title:"Débuts de l’écriture",date:-3500,description:"Repère conventionnel du développement des premières formes d’écriture.",position:"top"},
-  {id:"e-rome",title:"Fin de l’Empire romain",date:476,description:"Chute de l’Empire romain d’Occident (date conventionnelle).",position:"top"},
-  {id:"e-amerique",title:"Découverte de l’Amérique",date:1492,description:"Voyage de Christophe Colomb vers les Amériques.",position:"top"},
-  {id:"e-revolution",title:"Révolution française",date:1789,description:"Début de la Révolution française.",position:"top"}
- ],
- compressions:[{id:"c-pre",start:-2500000,end:-3500,style:"wave"}]
+ timeline:{title:"Ma frise chronologique",start:-100,end:2026},
+ periods:[],
+ events:[],
+ compressions:[]
 }}
 let state;
 let selected={type:"period",id:"p-pre"};
