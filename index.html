@@ -316,8 +316,9 @@ function renderSvg(){
   const bx=(scale.map(-1)+scale.map(1))/2;
   out.push(line(bx,88,bx,top+bh+10,'stroke="#ef4036" stroke-width="2.1"'));
   out.push('<rect x="'+(bx-74)+'" y="88" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
-  out.push(text(bx,103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="10" font-weight="900" fill="#ef4036"'));
-  out.push(text(bx,116,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="8.5" fill="#a65a55"'));
+  const birthBottom=state.timeline.birthPosition==="bottom";
+  out.push(text(bx,birthBottom?292:103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036"'));
+  out.push(text(bx,birthBottom?308:120,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55"'));
  }
  const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
  const prior=[];
@@ -345,8 +346,8 @@ function renderSvg(){
    const labelH=e.image?112:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
    if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
-   out.push(text(bx+boxW/2,labelY+(e.image?83:16),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="'+escapeHtml(e.textColor||"#344158")+'"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="'+escapeHtml(e.textColor||"#7b8494")+'"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?83:16),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
   }else{
    const labelY=314+lane*31;
    out.push(line(x,top+bh,bx+boxW/2,labelY,'stroke="#8993a3" stroke-width="1.1"'));
@@ -354,8 +355,8 @@ function renderSvg(){
    const labelH=e.image?112:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
    if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
-   out.push(text(bx+boxW/2,labelY+(e.image?83:15),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?83:15),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
   }
  });
  // Dates : on conserve chaque repère et on répartit les étiquettes sur plusieurs lignes.
@@ -669,7 +670,7 @@ document.addEventListener("click",function(e){
 document.getElementById("addPeriodBtn").addEventListener("click",function(){addItem("period")});
 document.getElementById("addEventBtn").addEventListener("click",function(){addItem("event")});
 document.getElementById("addBreakBtn").addEventListener("click",function(){addItem("break")});
-document.getElementById("birthBtn").addEventListener("click",function(){toast("Les repères 1 av. J.-C. et 1 ap. J.-C. sont masqués sur la frise.")});
+document.getElementById("birthBtn").addEventListener("click",function(){state.timeline.birthPosition=state.timeline.birthPosition==="bottom"?"top":"bottom";renderSvg();saveState();toast("Repère de l’an 1 placé "+(state.timeline.birthPosition==="bottom"?"en-dessous":"au-dessus")+" de la frise. Reclique pour changer.")});
 document.getElementById("resetBtn").addEventListener("click",function(){
  if(!confirm("Remplacer la frise actuelle par les exemples initiaux ?"))return;
  state=examples();selected={type:"period",id:"p-pre"};refresh();toast("Exemples initiaux restaurés.")
