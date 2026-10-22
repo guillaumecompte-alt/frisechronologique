@@ -119,6 +119,7 @@ function examples(){return {
 let state;
 let selected={type:"period",id:"p-pre"};
 let noticeTimer=null;
+let lastSelectedColor=COLORS[0].value;
 function validYear(v){return Number.isInteger(Number(v))&&Number(v)!==0&&Number.isFinite(Number(v))}
 function histOrd(y){y=Number(y);return y<0?y+1:y}
 function yearDate(y){return validYear(y)?Number(y):null}
@@ -281,6 +282,40 @@ function renderSvg(){
  out.push('<path d="M'+scale.x0+' 70 l12 -7 v14 z" fill="#ef4036"/><path d="M'+scale.x1+' 70 l-12 -7 v14 z" fill="#ef4036"/>');
  out.push(text((scale.x0+scale.x1)/2,61,"HISTOIRE",'text-anchor="middle" font-size="16" font-weight="850" fill="#ef4036"'));
  // Event labels get separate lanes when points are close to each other.
+
+ // Band and colored periods.
+ out.push('<rect x="'+scale.x0+'" y="'+top+'" width="'+(scale.x1-scale.x0)+'" height="'+bh+'" rx="7" fill="#f0eee7" filter="url(#softShadow)"/>');
+ state.periods.slice().sort(function(a,b){return Number(a.start)-Number(b.start)}).forEach(function(p){
+  const x1=Math.max(scale.x0,scale.map(p.start)),x2=Math.min(scale.x1,scale.map(p.end));
+  if(x2<=x1)return;
+  out.push(pathPeriod(p,scale,top,bh));
+  // Drag handles let the user adjust period boundaries directly on the timeline.
+  out.push('<g data-period-id="'+escapeHtml(p.id)+'" style="cursor:ew-resize">');
+  out.push('<rect x="'+(x1-5)+'" y="'+(top-3)+'" width="10" height="'+(bh+6)+'" rx="3" fill="#fff" fill-opacity=".01" data-period-handle="start" data-period-id="'+escapeHtml(p.id)+'"/>');
+  out.push('<rect x="'+(x2-5)+'" y="'+(top-3)+'" width="10" height="'+(bh+6)+'" rx="3" fill="#fff" fill-opacity=".01" data-period-handle="end" data-period-id="'+escapeHtml(p.id)+'"/>');
+  out.push('<path d="M'+x1+' '+(top+bh/2-9)+' v18 M'+x2+' '+(top+bh/2-9)+' v18" stroke="#344158" stroke-width="1.5" opacity=".7" pointer-events="none"/>');
+  out.push('</g>');
+  const px=(x1+x2)/2,available=x2-x1;
+  if(available>72){
+   const name=p.name.toUpperCase();
+   const lines=[];
+   if(available<132&&name.length>12){const words=name.split(/\s+/);let first="",second="";words.forEach(function(w){if((first+" "+w).trim().length<=11)first=(first+" "+w).trim();else second=(second+" "+w).trim()});lines.push(first);if(second)lines.push(second)}
+   else if(available<210&&name.length>19){const words=name.split(/\s+/);let first="",second="";words.forEach(function(w){if((first+" "+w).trim().length<=18)first=(first+" "+w).trim();else second=(second+" "+w).trim()});lines.push(first);if(second)lines.push(second)}
+   else lines.push(name);
+   const fs=available<100?9:available<160?10:13;
+   if(lines.length===1)out.push(text(px,top+bh/2+4,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" letter-spacing=".1"'));
+   else{out.push(text(px,top+bh/2-2,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'));out.push(text(px,top+bh/2+13,lines[1],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'))}
+  }
+ });
+ out.push(line(scale.x0,top+bh+1,scale.x1,top+bh+1,'stroke="#fff" stroke-width="1.2"'));
+ // Birth of Jesus transition: separator between 1 BCE and 1 CE, not a year zero date.
+ if(lo<=-1&&hi>=1){
+  const bx=(scale.map(-1)+scale.map(1))/2;
+  out.push(line(bx,88,bx,top+bh+10,'stroke="#ef4036" stroke-width="2.1"'));
+  out.push('<rect x="'+(bx-74)+'" y="88" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
+  out.push(text(bx,103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="10" font-weight="900" fill="#ef4036"'));
+  out.push(text(bx,116,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="8.5" fill="#a65a55"'));
+ }
  const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
  const prior=[];
  events.forEach(function(e,index){
@@ -316,39 +351,6 @@ function renderSvg(){
    out.push(text(bx+boxW/2,labelY+35,fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }
  });
- // Band and colored periods.
- out.push('<rect x="'+scale.x0+'" y="'+top+'" width="'+(scale.x1-scale.x0)+'" height="'+bh+'" rx="7" fill="#f0eee7" filter="url(#softShadow)"/>');
- state.periods.slice().sort(function(a,b){return Number(a.start)-Number(b.start)}).forEach(function(p){
-  const x1=Math.max(scale.x0,scale.map(p.start)),x2=Math.min(scale.x1,scale.map(p.end));
-  if(x2<=x1)return;
-  out.push(pathPeriod(p,scale,top,bh));
-  // Drag handles let the user adjust period boundaries directly on the timeline.
-  out.push('<g data-period-id="'+escapeHtml(p.id)+'" style="cursor:ew-resize">');
-  out.push('<rect x="'+(x1-5)+'" y="'+(top-3)+'" width="10" height="'+(bh+6)+'" rx="3" fill="#fff" fill-opacity=".01" data-period-handle="start" data-period-id="'+escapeHtml(p.id)+'"/>');
-  out.push('<rect x="'+(x2-5)+'" y="'+(top-3)+'" width="10" height="'+(bh+6)+'" rx="3" fill="#fff" fill-opacity=".01" data-period-handle="end" data-period-id="'+escapeHtml(p.id)+'"/>');
-  out.push('<path d="M'+x1+' '+(top+bh/2-9)+' v18 M'+x2+' '+(top+bh/2-9)+' v18" stroke="#344158" stroke-width="1.5" opacity=".7" pointer-events="none"/>');
-  out.push('</g>');
-  const px=(x1+x2)/2,available=x2-x1;
-  if(available>72){
-   const name=p.name.toUpperCase();
-   const lines=[];
-   if(available<132&&name.length>12){const words=name.split(/\s+/);let first="",second="";words.forEach(function(w){if((first+" "+w).trim().length<=11)first=(first+" "+w).trim();else second=(second+" "+w).trim()});lines.push(first);if(second)lines.push(second)}
-   else if(available<210&&name.length>19){const words=name.split(/\s+/);let first="",second="";words.forEach(function(w){if((first+" "+w).trim().length<=18)first=(first+" "+w).trim();else second=(second+" "+w).trim()});lines.push(first);if(second)lines.push(second)}
-   else lines.push(name);
-   const fs=available<100?9:available<160?10:13;
-   if(lines.length===1)out.push(text(px,top+bh/2+4,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" letter-spacing=".1"'));
-   else{out.push(text(px,top+bh/2-2,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'));out.push(text(px,top+bh/2+13,lines[1],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'))}
-  }
- });
- out.push(line(scale.x0,top+bh+1,scale.x1,top+bh+1,'stroke="#fff" stroke-width="1.2"'));
- // Birth of Jesus transition: separator between 1 BCE and 1 CE, not a year zero date.
- if(lo<=-1&&hi>=1){
-  const bx=(scale.map(-1)+scale.map(1))/2;
-  out.push(line(bx,88,bx,top+bh+10,'stroke="#ef4036" stroke-width="2.1"'));
-  out.push('<rect x="'+(bx-74)+'" y="88" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
-  out.push(text(bx,103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="10" font-weight="900" fill="#ef4036"'));
-  out.push(text(bx,116,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="8.5" fill="#a65a55"'));
- }
  // Key date labels at period boundaries, spread apart when necessary.
  const candidates=[{y:lo,label:fmtYear(lo,true),priority:10},{y:hi,label:fmtYear(hi,true),priority:10}];
  state.periods.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:5});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:5})});
@@ -399,7 +401,7 @@ function renderSvg(){
 function selectItem(type,id){selected={type:type,id:id};renderLists();renderEditor();document.getElementById("editorPanel").scrollIntoView({behavior:"smooth",block:"nearest"})}
 function addItem(type){
  if(type==="period"){
-  const item={id:uid(),name:"Nouvelle période",start:-3500,end:476,color:COLORS[(state.periods.length)%COLORS.length].value};
+  const item={id:uid(),name:"Nouvelle période",start:-3500,end:476,color:lastSelectedColor};
   state.periods.push(item);selected={type:"period",id:item.id}
  }else if(type==="event"){
   const item={id:uid(),title:"Nouvel événement",date:800,description:"",position:"top"};state.events.push(item);selected={type:"event",id:item.id}
@@ -429,7 +431,7 @@ function saveItemForm(ev){
  }else if(type==="event"){
   const name=value("itemName").trim(),date=Number(value("itemDate"));
   if(!name||!validYear(date)){toast("Nom ou date invalide. L'année 0 ne peut pas être saisie.",true);return}
-  item.title=name;item.date=date;item.description=value("itemDescription")||"";item.position=value("itemPosition")||"top";
+  item.title=name;item.date=date;item.description=value("itemDescription")||"";item.desc=item.description;item.position=value("itemPosition")||"top";
  }else{
   const start=Number(value("itemStart")),end=Number(value("itemEnd"));
   if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : le début doit précéder la fin et l'année 0 n'est pas admise.",true);return}
@@ -508,9 +510,23 @@ timelineSvg.addEventListener("pointerdown",function(e){
  const eventDot=e.target.closest("[data-event-dot]");
  if(eventDot){activeDrag={kind:"event",id:eventDot.dataset.eventDot};timelineSvg.setPointerCapture(e.pointerId);e.preventDefault()}
 });
+const dragPreview=document.createElementNS("http://www.w3.org/2000/svg","g");
+dragPreview.setAttribute("id","dragYearPreview");
+dragPreview.innerHTML='<rect x="-70" y="-24" width="140" height="34" rx="7" fill="#18263d" opacity=".96"/><text x="0" y="-3" text-anchor="middle" font-size="12" font-weight="800" fill="#fff"></text>';
+timelineSvg.appendChild(dragPreview);
+timelineSvg.addEventListener("pointermove",function(e){
+ if(!activeDrag)return;
+ const pt=svgPoint(e);if(!pt)return;
+ const yr=inverseScale(pt.x),label=dragPreview.querySelector("text");
+ label.textContent=fmtYear(yr,true);
+ dragPreview.setAttribute("transform","translate("+Math.max(76,Math.min(1324,pt.x))+" "+Math.max(30,Math.min(390,pt.y-16))+")");
+ dragPreview.setAttribute("display","inline");
+ const line=dragPreview.querySelector("line");
+});
+timelineSvg.addEventListener("pointerdown",function(){dragPreview.setAttribute("display","none")});
 timelineSvg.addEventListener("pointerup",function(e){
  if(!activeDrag)return;
- const drag=activeDrag;activeDrag=null;suppressTimelineClick=true;
+ const drag=activeDrag;activeDrag=null;suppressTimelineClick=true;dragPreview.setAttribute("display","none");
  const pt=svgPoint(e);if(!pt)return;
  const year=inverseScale(pt.x);
  if(drag.kind==="event"){
@@ -539,7 +555,7 @@ timelineSvg.addEventListener("click",function(e){
 });
 
 document.getElementById("editorContent").addEventListener("click",function(e){
- const color=e.target.closest("[data-color]");if(color){const form=document.getElementById("itemForm");if(form){form.querySelectorAll("[data-color]").forEach(function(b){b.classList.remove("active")});color.classList.add("active")}}
+ const color=e.target.closest("[data-color]");if(color){lastSelectedColor=color.dataset.color;const form=document.getElementById("itemForm");if(form){form.querySelectorAll("[data-color]").forEach(function(b){b.classList.remove("active")});color.classList.add("active")}}
  if(e.target.closest("#deleteSelectedBtn"))deleteSelected()
 });
 document.addEventListener("click",function(e){
