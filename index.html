@@ -263,7 +263,8 @@ function pathPeriod(p,scale,top,height){
  if(rightKind==="wave"){for(let j=10;j>=0;j--){d+="L"+(x2+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
  else d+="L"+x2+" "+top+" ";
  d+="Z";
- const fill=(p.fillStyle==="hatched"||p.fillStyle==="hachuree")?'url(#periodHatch_'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,"")+')':escapeHtml(p.color);
+ const hatchSelected=["hatched","hachuree","hatched-color"].includes(String(p.fillStyle||"").toLowerCase());
+ const fill=hatchSelected?'url(#periodHatch_'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,"")+')':escapeHtml(p.color);
  return '<path d="'+d+'" fill="'+fill+'" stroke="'+escapeHtml(p.color)+'" stroke-width="1"/>'+
  (leftKind==="dotted"?'<path d="M'+x1+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")+
  (rightKind==="dotted"?'<path d="M'+x2+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")
@@ -281,7 +282,7 @@ function renderSvg(){
   const pid=String(p.id).replace(/[^a-zA-Z0-9_-]/g,"");
   const pc=escapeHtml(p.color||"#66758b");
   // Motif contrasté : fond très légèrement coloré et hachures nettes dans la couleur choisie.
-  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="'+pc+'" fill-opacity=".10"/><path d="M-3 3 L3 -3 M0 10 L10 0 M7 13 L13 7" fill="none" stroke="'+pc+'" stroke-width="2.6" stroke-linecap="square"/></pattern></defs>');
+  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="'+pc+'" fill-opacity=".08"/><path d="M-3 3 L3 -3 M0 10 L10 0 M7 13 L13 7" fill="none" stroke="'+pc+'" stroke-opacity="1" stroke-width="3.2" stroke-linecap="square"/></pattern></defs>');
  });
  out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="16" fill="url(#bgFade)"/>');
  out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
@@ -527,6 +528,7 @@ document.getElementById("editorContent").addEventListener("input",function(ev){
  const el=ev.target;
  if(type==="period"){
   if(el.id==="itemName")item.name=el.value;
+  if(el.id==="itemFillStyle")item.fillStyle=el.value;
   if(el.id==="itemStart"||el.id==="itemEnd"){
    const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
    if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
