@@ -483,7 +483,7 @@ document.getElementById("timelineForm").addEventListener("submit",updateTimeline
 document.getElementById("editorContent").addEventListener("submit",saveItemForm);
 // Click the empty timeline band to create an event at that date. Drag a date marker to reposition it.
 const timelineSvg=document.getElementById("timelineSvg");
-let activeDrag=null;
+let activeDrag=null, suppressTimelineClick=false;
 function svgPoint(evt){
  const pt=timelineSvg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;
  const matrix=timelineSvg.getScreenCTM();if(!matrix)return null;
@@ -510,7 +510,7 @@ timelineSvg.addEventListener("pointerdown",function(e){
 });
 timelineSvg.addEventListener("pointerup",function(e){
  if(!activeDrag)return;
- const drag=activeDrag;activeDrag=null;
+ const drag=activeDrag;activeDrag=null;suppressTimelineClick=true;
  const pt=svgPoint(e);if(!pt)return;
  const year=inverseScale(pt.x);
  if(drag.kind==="event"){
@@ -530,6 +530,7 @@ timelineSvg.addEventListener("pointerup",function(e){
  }
 });
 timelineSvg.addEventListener("click",function(e){
+ if(suppressTimelineClick){suppressTimelineClick=false;return}
  if(e.target.closest("[data-event-dot]")||e.target.closest("[data-break-handle]")||e.target.closest("[data-period-handle]"))return;
  const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
  const year=inverseScale(pt.x);
