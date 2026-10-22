@@ -280,7 +280,7 @@ function renderSvg(){
  state.periods.filter(function(p){return p.fillStyle==="hatched"}).forEach(function(p){
   const pid=String(p.id).replace(/[^a-zA-Z0-9_-]/g,"");
   const pc=escapeHtml(p.color||"#66758b");
-  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="8" height="8"><rect width="8" height="8" fill="'+pc+'" fill-opacity=".18"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="'+pc+'" stroke-width="1.5"/></pattern></defs>');
+  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="9" height="9"><rect width="9" height="9" fill="'+pc+'" fill-opacity=".12"/><path d="M-2 2 L2 -2 M0 9 L9 0 M7 11 L11 7" stroke="'+pc+'" stroke-width="2"/></pattern></defs>');
  });
  out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="16" fill="url(#bgFade)"/>');
  out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
