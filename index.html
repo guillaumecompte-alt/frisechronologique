@@ -315,7 +315,7 @@ function renderSvg(){
  if(lo<=-1&&hi>=1){
   const bx=(scale.map(-1)+scale.map(1))/2;
   const birthBottom=state.timeline.birthPosition==="bottom";
-  const birthLabelY=birthBottom?277:88;
+  const birthLabelY=birthBottom?310:88;
   if(birthBottom){out.push(line(bx,top+bh,bx,birthLabelY,'stroke="#ef4036" stroke-width="2.1"'));}
   else{out.push(line(bx,birthLabelY+38,bx,top,'stroke="#ef4036" stroke-width="2.1"'));}
   out.push('<rect x="'+(bx-74)+'" y="'+birthLabelY+'" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
@@ -379,7 +379,7 @@ function renderSvg(){
   out.push(line(x,top+bh+15,x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
   const anchor=x<labelW/2+8?"start":x>W-labelW/2-8?"end":"middle";
   const tx=anchor==="start"?Math.max(8,x):anchor==="end"?Math.min(W-8,x):x;
-  out.push(text(tx,y,t.label,'text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70"'));
+  if(!(state.timeline.hiddenDateTicks||[]).includes(String(t.y))){out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+String(t.y)+'" style="cursor:pointer">'+escapeHtml(t.label)+'</text>');}
  });
  // Agrandir la zone SVG si beaucoup de dates nécessitent plusieurs rangées.
  if(lanes.length>4){
@@ -634,6 +634,7 @@ timelineSvg.addEventListener("pointerup",function(e){
 });
 timelineSvg.addEventListener("click",function(e){
  if(suppressTimelineClick){suppressTimelineClick=false;return}
+ if(e.target.closest("[data-date-tick]")){const tick=e.target.closest("[data-date-tick]");const year=tick.getAttribute("data-date-tick");state.timeline.hiddenDateTicks=state.timeline.hiddenDateTicks||[];if(!state.timeline.hiddenDateTicks.includes(year))state.timeline.hiddenDateTicks.push(year);renderSvg();saveState();return;}
  if(e.target.closest("[data-event-dot]")||e.target.closest("[data-period-handle]"))return;
  const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
  const year=inverseScale(pt.x);
