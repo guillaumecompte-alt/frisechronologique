@@ -267,7 +267,7 @@ function pathPeriod(p,scale,top,height){
 }
 function renderSvg(){
  const svg=document.getElementById("timelineSvg");if(!svg)return;
- const W=1400,H=420,top=178,bh=80,scale=getScale(),lo=Number(state.timeline.start),hi=Number(state.timeline.end);
+ const W=1400;let H=420;const top=178,bh=80,scale=getScale(),lo=Number(state.timeline.start),hi=Number(state.timeline.end);
  const out=[];
  function line(x1,y1,x2,y2,attrs){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" '+(attrs||"")+'/>'}
  function text(x,y,t,attrs){return '<text x="'+x+'" y="'+y+'" '+(attrs||"")+'>'+escapeHtml(t)+'</text>'}
@@ -371,6 +371,11 @@ function renderSvg(){
   const tx=anchor==="start"?Math.max(8,x):anchor==="end"?Math.min(W-8,x):x;
   out.push(text(tx,y,t.label,'text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70"'));
  });
+ // Agrandir la zone SVG si beaucoup de dates nécessitent plusieurs rangées.
+ if(lanes.length>4){
+  H=Math.max(H,top+bh+48+lanes.length*23+30);
+  out[3]=out[3].replace('height="420"','height="'+H+'"');
+ }
  // Direct manipulation: draggable handles adjust the visual break boundaries.
  state.compressions.forEach(function(comp){
   if(Number(comp.end)<lo||Number(comp.start)>hi)return;
@@ -396,8 +401,8 @@ function renderSvg(){
    out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
   }
  });
- out.push(text(68,391,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
- out.push(text(1330,391,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
+ out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
+ out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML=out.join("");
  svg.setAttribute("aria-label",state.timeline.title+" : de "+fmtYear(lo,true)+" à "+fmtYear(hi,true))
 }
