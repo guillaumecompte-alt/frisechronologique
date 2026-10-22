@@ -394,7 +394,7 @@ function renderSvg(){
   out.push('<rect x="'+x1.toFixed(2)+'" y="'+top+'" width="'+Math.max(1,x2-x1).toFixed(2)+'" height="'+bh+'" fill="'+escapeHtml(cue)+'" fill-opacity=".22" stroke="'+escapeHtml(cue)+'" stroke-width="1.5" pointer-events="none"/>');
   if(c.style==="wave"){
    // Ondulations horizontales sur toute la longueur, plus ondulations verticales aux extrémités.
-   [top+5,top+bh-5].forEach(function(y){let d="";for(let x=x1;x<=x2+0.1;x+=5){const yy=y+Math.sin((x-x1)/10*Math.PI)*2.6;d+=(x===x1?"M":" L")+x.toFixed(2)+" "+yy.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
+   [top+5,top+bh-5].forEach(function(y){let d="";for(let k=0;k<=40;k++){const x=x1+(x2-x1)*k/40,yy=y+Math.sin(k/40*Math.PI*8)*2.6;d+=(k===0?"M":" L")+x.toFixed(2)+" "+yy.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
    [x1,x2].forEach(function(x){let d="";for(let k=0;k<=10;k++){const y=top+k*bh/10,xx=x+Math.sin(k*Math.PI*1.7)*4;d+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')})
   }else{
    [top+4,top+bh-4].forEach(function(y){out.push(line(x1,y,x2,y,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))});
