@@ -302,14 +302,14 @@ function renderSvg(){
   if(!isBottom){
    const labelY=42+lane*35;
    out.push(line(x,top,bx+boxW/2,labelY+22,'stroke="#8993a3" stroke-width="1.1"'));
-   out.push('<circle cx="'+x+'" cy="'+top+'" r="3.3" fill="#ef4036" stroke="#fff" stroke-width="1.5"/>');
+   out.push('<circle cx="'+x+'" cy="'+top+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="25" rx="6" fill="#fff" stroke="#e5e4de"/>');
    out.push(text(bx+boxW/2,labelY+16,e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
    out.push(text(bx+boxW/2,labelY+35,fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }else{
    const labelY=314+lane*31;
    out.push(line(x,top+bh,bx+boxW/2,labelY,'stroke="#8993a3" stroke-width="1.1"'));
-   out.push('<circle cx="'+x+'" cy="'+(top+bh)+'" r="3.3" fill="#ef4036" stroke="#fff" stroke-width="1.5"/>');
+   out.push('<circle cx="'+x+'" cy="'+(top+bh)+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="24" rx="6" fill="#fff" stroke="#e5e4de"/>');
    out.push(text(bx+boxW/2,labelY+15,e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
    out.push(text(bx+boxW/2,labelY+35,fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
@@ -358,6 +358,17 @@ function renderSvg(){
   const anchor=x<100?"start":x>1300?"end":"middle";
   const tx=x<100?x+1:x>1300?x-1:x;
   out.push(text(tx,top+bh+25,t.label,'text-anchor="'+anchor+'" font-size="10" font-weight="650" fill="#606b7e"'));
+ });
+ // Direct manipulation: draggable handles adjust the visual break boundaries.
+ state.compressions.forEach(function(comp){
+  if(Number(comp.end)<lo||Number(comp.start)>hi)return;
+  const x1=scale.map(comp.start),x2=scale.map(comp.end),mid=(x1+x2)/2;
+  out.push('<g class="break-handles" data-break-id="'+escapeHtml(comp.id)+'" style="cursor:ew-resize">');
+  out.push('<rect x="'+(x1-9)+'" y="'+(top-7)+'" width="18" height="'+(bh+14)+'" rx="5" fill="#fff" fill-opacity=".01" stroke="none" data-break-handle="start" data-break-id="'+escapeHtml(comp.id)+'"/>');
+  out.push('<rect x="'+(x2-9)+'" y="'+(top-7)+'" width="18" height="'+(bh+14)+'" rx="5" fill="#fff" fill-opacity=".01" stroke="none" data-break-handle="end" data-break-id="'+escapeHtml(comp.id)+'"/>');
+  out.push('<rect x="'+(x1-3)+'" y="'+(top+bh/2-13)+'" width="6" height="26" rx="3" fill="#fff" stroke="#7c8798" stroke-width="1.4" pointer-events="none"/>');
+  out.push('<rect x="'+(x2-3)+'" y="'+(top+bh/2-13)+'" width="6" height="26" rx="3" fill="#fff" stroke="#7c8798" stroke-width="1.4" pointer-events="none"/>');
+  out.push('</g>');
  });
  // Dotted or wavy cues are drawn explicitly so breaks remain visible in the exported SVG.
  state.compressions.forEach(function(c){
@@ -463,6 +474,54 @@ function validateImport(v){
 }
 document.getElementById("timelineForm").addEventListener("submit",updateTimeline);
 document.getElementById("editorContent").addEventListener("submit",saveItemForm);
+// Click the empty timeline band to create an event at that date. Drag a date marker to reposition it.
+const timelineSvg=document.getElementById("timelineSvg");
+let activeDrag=null;
+function svgPoint(evt){
+ const pt=timelineSvg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;
+ const matrix=timelineSvg.getScreenCTM();if(!matrix)return null;
+ return pt.matrixTransform(matrix.inverse())
+}
+function inverseScale(x){
+ const scale=getScale(),segments=scale.intervals;
+ if(x<=scale.x0)return Number(state.timeline.start);
+ if(x>=scale.x1)return Number(state.timeline.end);
+ const seg=segments.find(function(s){return x>=s.x0&&x<=s.x1})||segments[segments.length-1];
+ const ratio=(x-seg.x0)/(seg.x1-seg.x0||1);
+ let ordinal=seg.oa+ratio*(seg.ob-seg.oa);
+ let year=Math.round(ordinal);
+ if(year===0)year=ordinal<1? -1:1;
+ return Math.max(Number(state.timeline.start),Math.min(Number(state.timeline.end),year))
+}
+timelineSvg.addEventListener("pointerdown",function(e){
+ const handle=e.target.closest("[data-break-handle]");
+ if(handle){activeDrag={kind:"break",id:handle.dataset.breakId,edge:handle.dataset.breakHandle};timelineSvg.setPointerCapture(e.pointerId);e.preventDefault();return}
+ const eventDot=e.target.closest("[data-event-dot]");
+ if(eventDot){activeDrag={kind:"event",id:eventDot.dataset.eventDot};timelineSvg.setPointerCapture(e.pointerId);e.preventDefault()}
+});
+timelineSvg.addEventListener("pointerup",function(e){
+ if(!activeDrag)return;
+ const drag=activeDrag;activeDrag=null;
+ const pt=svgPoint(e);if(!pt)return;
+ const year=inverseScale(pt.x);
+ if(drag.kind==="event"){
+  const item=state.events.find(function(v){return v.id===drag.id});if(item){item.date=year;selectItem("event",item.id);refresh();toast("Date de l’événement déplacée.")}
+ }else{
+  const item=state.compressions.find(function(v){return v.id===drag.id});if(!item)return;
+  if(drag.edge==="start")item.start=Math.min(year,Number(item.end)-1);
+  else item.end=Math.max(year,Number(item.start)+1);
+  if(item.start===0)item.start=-1;if(item.end===0)item.end=1;
+  selected={type:"break",id:item.id};refresh();toast("Rupture ajustée. Tu peux affiner les dates dans le formulaire.")
+ }
+});
+timelineSvg.addEventListener("click",function(e){
+ if(e.target.closest("[data-event-dot]")||e.target.closest("[data-break-handle]"))return;
+ const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
+ const year=inverseScale(pt.x);
+ const item={id:uid(),title:"Nouvel événement",date:year,description:"",position:"top"};
+ state.events.push(item);selected={type:"event",id:item.id};refresh();toast("Événement ajouté à "+fmtYear(year)+". Complète son nom dans le formulaire.")
+});
+
 document.getElementById("editorContent").addEventListener("click",function(e){
  const color=e.target.closest("[data-color]");if(color){const form=document.getElementById("itemForm");if(form){form.querySelectorAll("[data-color]").forEach(function(b){b.classList.remove("active")});color.classList.add("active")}}
  if(e.target.closest("#deleteSelectedBtn"))deleteSelected()
