@@ -410,7 +410,7 @@ function renderSvg(){
    if(x2-x1>8){
     const mid=(x1+x2)/2;
     const label=(c.name||"Temps condensé").trim();
-    if(label)out.push(text(mid,top+bh/2+4,escapeHtml(label),'text-anchor="middle" font-size="10" font-weight="700" fill="#263247" pointer-events="none"'));
+    if(label){const fs=(x2-x1)<100?9:(x2-x1)<160?10:13;out.push(text(mid,top+bh/2+4,escapeHtml(label.toUpperCase()),'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" letter-spacing=".1" pointer-events="none"'));}
     if(x2-x1>85)out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
    }
   });
