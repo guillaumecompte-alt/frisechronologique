@@ -82,7 +82,7 @@
       </div>
       <div class="stage" id="stage"><svg id="timelineSvg" class="timeline-svg" role="img" aria-label="Frise chronologique"></svg></div>
       <div class="preview-foot">
-        <div class="note"><strong>Lecture de la frise.</strong> La largeur de certains segments peut être volontairement réduite. Les bords ondulés et pointillés signalent alors une durée condensée : l'échelle n'est plus proportionnelle au temps réel.</div>
+        <div class="note"><strong>TIPS :</strong> Clique sur les dates pour les masquer ou les faire réapparaître.</div>
         <div class="stats"><span id="periodStat">5 périodes</span><span id="eventStat">3 événements</span><span id="breakStat">1 rupture</span></div>
       </div>
     </section>
@@ -320,7 +320,7 @@ function renderSvg(){
   else{out.push(line(bx,birthLabelY+38,bx,top,'stroke="#ef4036" stroke-width="2.1"'));}
   out.push('<rect x="'+(bx-74)+'" y="'+birthLabelY+'" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
   out.push(text(bx,birthBottom?325:103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036"'));
-  out.push(text(bx,birthBottom?308:120,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55"'));
+  out.push(text(bx,birthBottom?343:120,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55"'));
  }
  const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
  const prior=[];
