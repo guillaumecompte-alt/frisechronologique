@@ -187,6 +187,7 @@ function renderEditor(){
   html+=field("itemName","Nom de la période",item.name,"text",'maxlength="100" required');
   html+='<div class="two-col">'+field("itemStart","Début (année)",item.start,"number",'required')+field("itemEnd","Fin (année)",item.end,"number",'required')+'</div>';
   html+='<div class="field"><label>Couleur de la période</label>'+paletteHtml(item.color)+'</div>';
+  html+='<div class="field"><label for="itemFillStyle">Remplissage de la période</label><select id="itemFillStyle" name="itemFillStyle"><option value="solid" '+(item.fillStyle!=="hatched"?"selected":"")+'>Couleur pleine</option><option value="hatched" '+(item.fillStyle==="hatched"?"selected":"")+'>Couleur hachurée</option></select></div>';
   html+='<p class="field-help">Le nom apparaît à l\'intérieur de la bande colorée lorsque l\'espace le permet.</p>';
  }else if(selected.type==="event"){
   html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
@@ -262,7 +263,8 @@ function pathPeriod(p,scale,top,height){
  if(rightKind==="wave"){for(let j=10;j>=0;j--){d+="L"+(x2+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
  else d+="L"+x2+" "+top+" ";
  d+="Z";
- return '<path d="'+d+'" fill="'+escapeHtml(p.color)+'" stroke="'+escapeHtml(p.color)+'" stroke-width="1"/>'+
+ const fill=p.fillStyle==="hatched"?'url(#periodHatch_'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,"")+')':escapeHtml(p.color);
+ return '<path d="'+d+'" fill="'+fill+'" stroke="'+escapeHtml(p.color)+'" stroke-width="1"/>'+
  (leftKind==="dotted"?'<path d="M'+x1+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")+
  (rightKind==="dotted"?'<path d="M'+x2+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")
 }
@@ -275,6 +277,11 @@ function renderSvg(){
  out.push('<title>'+escapeHtml(state.timeline.title)+'</title>');
  out.push('<desc>Frise chronologique éditable de '+escapeHtml(fmtYear(lo))+' à '+escapeHtml(fmtYear(hi))+'.</desc>');
  out.push('<defs><linearGradient id="bgFade" x1="0" x2="1"><stop offset="0" stop-color="#fcfbf8"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#202d43" flood-opacity=".06"/></filter></defs>');
+ state.periods.filter(function(p){return p.fillStyle==="hatched"}).forEach(function(p){
+  const pid=String(p.id).replace(/[^a-zA-Z0-9_-]/g,"");
+  const pc=escapeHtml(p.color||"#66758b");
+  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="8" height="8"><rect width="8" height="8" fill="'+pc+'" fill-opacity=".18"/><path d="M-2 2 L2 -2 M0 8 L8 0 M6 10 L10 6" stroke="'+pc+'" stroke-width="1.5"/></pattern></defs>');
+ });
  out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="16" fill="url(#bgFade)"/>');
  out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
  out.push(text(1330,34,"FRISE PERSONNALISÉE",'text-anchor="end" font-size="10" font-weight="750" fill="#818998" letter-spacing="1.3"'));
@@ -451,7 +458,7 @@ function saveItemForm(ev){
   const name=value("itemName").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
   if(!name){toast("Ajoute un nom à cette période.",true);return}
   if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : il faut deux années différentes, sans année 0, et un début avant la fin.",true);return}
-  item.name=name;item.start=start;item.end=end;
+  item.name=name;item.start=start;item.end=end;item.fillStyle=value("itemFillStyle")||"solid";
   const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
  }else if(type==="event"){
   const name=value("itemName").trim(),date=Number(value("itemDate"));
