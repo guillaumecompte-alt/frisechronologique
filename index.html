@@ -606,10 +606,10 @@ dragPreview.innerHTML='<rect x="-70" y="-24" width="140" height="34" rx="7" fill
 timelineSvg.appendChild(dragPreview);
 timelineSvg.addEventListener("pointermove",function(e){
  const target=e.target;
- const pt=svgPoint(e);
+ const hoverPt=svgPoint(e);
  let pointer=!!(target.closest("[data-event-label]")||target.closest("[data-event-dot]")||target.closest("[data-period-handle]"));
- if(!pointer&&pt&&pt.y>=178&&pt.y<=258){
-  const yr=inverseScale(pt.x);
+ if(!pointer&&hoverPt&&hoverPt.y>=178&&hoverPt.y<=258){
+  const yr=inverseScale(hoverPt.x);
   pointer=state.periods.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr})||state.compressions.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr});
  }
  timelineSvg.style.cursor=pointer?"pointer":"default";
