@@ -320,9 +320,9 @@ function renderSvg(){
   const birthLabelY=birthBottom?310:88;
   if(birthBottom){out.push(line(bx,top+bh,bx,birthLabelY,'stroke="#ef4036" stroke-width="2.1"'));}
   else{out.push(line(bx,birthLabelY+38,bx,top,'stroke="#ef4036" stroke-width="2.1"'));}
-  out.push('<rect x="'+(bx-74)+'" y="'+birthLabelY+'" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
-  out.push(text(bx,birthBottom?325:103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036"'));
-  out.push(text(bx,birthBottom?343:120,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55"'));
+  out.push('<rect x="'+(bx-96)+'" y="'+birthLabelY+'" width="192" height="42" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
+  out.push(text(bx,birthBottom?326:103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036"'));
+  out.push(text(bx,birthBottom?344:120,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55"'));
  }
  const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
  const prior=[];
