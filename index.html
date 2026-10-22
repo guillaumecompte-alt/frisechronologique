@@ -319,7 +319,7 @@ function renderSvg(){
   if(birthBottom){out.push(line(bx,top+bh,bx,birthLabelY,'stroke="#ef4036" stroke-width="2.1"'));}
   else{out.push(line(bx,birthLabelY+38,bx,top,'stroke="#ef4036" stroke-width="2.1"'));}
   out.push('<rect x="'+(bx-74)+'" y="'+birthLabelY+'" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
-  out.push(text(bx,birthBottom?292:103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036"'));
+  out.push(text(bx,birthBottom?325:103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036"'));
   out.push(text(bx,birthBottom?308:120,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55"'));
  }
  const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
@@ -375,11 +375,15 @@ function renderSvg(){
   if(!lanes[lane])lanes[lane]=[];
   lanes[lane].push({x:x,w:labelW});
   const y=top+bh+29+lane*23;
-  out.push(line(x,top+bh,x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'));
-  out.push(line(x,top+bh+15,x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
+  const hidden=(state.timeline.hiddenDateTicks||[]).includes(String(t.y));
+  if(!hidden){
+   out.push(line(x,top+bh,x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'));
+   out.push(line(x,top+bh+15,x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
+  }
   const anchor=x<labelW/2+8?"start":x>W-labelW/2-8?"end":"middle";
   const tx=anchor==="start"?Math.max(8,x):anchor==="end"?Math.min(W-8,x):x;
-  if(!(state.timeline.hiddenDateTicks||[]).includes(String(t.y))){out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+String(t.y)+'" style="cursor:pointer">'+escapeHtml(t.label)+'</text>');}
+  if(!hidden){out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+String(t.y)+'" style="cursor:pointer">'+escapeHtml(t.label)+'</text>');}
+  else{out.push('<rect x="'+(x-12)+'" y="'+(y-14)+'" width="24" height="20" fill="transparent" data-date-tick="'+String(t.y)+'" style="cursor:pointer"/>');}
  });
  // Agrandir la zone SVG si beaucoup de dates nécessitent plusieurs rangées.
  if(lanes.length>4){
@@ -634,7 +638,7 @@ timelineSvg.addEventListener("pointerup",function(e){
 });
 timelineSvg.addEventListener("click",function(e){
  if(suppressTimelineClick){suppressTimelineClick=false;return}
- if(e.target.closest("[data-date-tick]")){const tick=e.target.closest("[data-date-tick]");const year=tick.getAttribute("data-date-tick");state.timeline.hiddenDateTicks=state.timeline.hiddenDateTicks||[];if(!state.timeline.hiddenDateTicks.includes(year))state.timeline.hiddenDateTicks.push(year);renderSvg();saveState();return;}
+ if(e.target.closest("[data-date-tick]")){const tick=e.target.closest("[data-date-tick]");const year=tick.getAttribute("data-date-tick");state.timeline.hiddenDateTicks=state.timeline.hiddenDateTicks||[];const idx=state.timeline.hiddenDateTicks.indexOf(year);if(idx>=0)state.timeline.hiddenDateTicks.splice(idx,1);else state.timeline.hiddenDateTicks.push(year);renderSvg();saveState();return;}
  if(e.target.closest("[data-event-dot]")||e.target.closest("[data-period-handle]"))return;
  const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
  const year=inverseScale(pt.x);
