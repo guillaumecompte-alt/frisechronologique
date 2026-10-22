@@ -338,7 +338,7 @@ function renderSvg(){
   const bx=Math.min(W-boxW-22,Math.max(22,x-boxW/2));
   if(!isBottom){
    const labelY=42+lane*35;
-   out.push(line(x,top,bx+boxW/2,labelY+40,'stroke="#8993a3" stroke-width="1.1"'));
+   out.push(line(x,top,bx+boxW/2,labelY+(e.image?78:40),'stroke="#8993a3" stroke-width="1.1"'));
    out.push('<circle cx="'+x+'" cy="'+top+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
    const labelH=e.image?78:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
