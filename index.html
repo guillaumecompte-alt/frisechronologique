@@ -305,7 +305,9 @@ function renderSvg(){
    else{out.push(text(px,top+bh/2-2,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'));out.push(text(px,top+bh/2+13,lines[1],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'))}
   }
  });
- out.push(line(scale.x0,top+bh+1,scale.x1,top+bh+1,'stroke="#fff" stroke-width="1.2"'));
+ // Axe du temps : flèche à droite pour indiquer la continuité de la frise.
+ out.push(line(scale.x0,top+bh+1,scale.x1-14,top+bh+1,'stroke="#344158" stroke-width="2" stroke-linecap="round" pointer-events="none"'));
+ out.push('<path d="M'+(scale.x1-20)+' '+(top+bh-7)+' L'+(scale.x1)+' '+(top+bh+1)+' L'+(scale.x1-20)+' '+(top+bh+9)+' Z" fill="#344158" pointer-events="none"/>');
  // Birth of Jesus transition: separator between 1 BCE and 1 CE, not a year zero date.
  if(lo<=-1&&hi>=1){
   const bx=(scale.map(-1)+scale.map(1))/2;
