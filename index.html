@@ -555,7 +555,17 @@ timelineSvg.addEventListener("click",function(e){
 });
 
 document.getElementById("editorContent").addEventListener("click",function(e){
- const color=e.target.closest("[data-color]");if(color){lastSelectedColor=color.dataset.color;const form=document.getElementById("itemForm");if(form){form.querySelectorAll("[data-color]").forEach(function(b){b.classList.remove("active")});color.classList.add("active")}}
+ const color=e.target.closest("[data-color]");
+ if(color){
+  lastSelectedColor=color.dataset.color;
+  const form=document.getElementById("itemForm");
+  if(form){form.querySelectorAll("[data-color]").forEach(function(b){b.classList.toggle("active",b===color)})}
+  // Apply the color to the model immediately, not only to the palette's visual state.
+  if(selected.type==="period"){
+   const period=state.periods.find(function(p){return p.id===selected.id});
+   if(period){period.color=color.dataset.color;renderLists();renderSvg();saveState()}
+  }
+ }
  if(e.target.closest("#deleteSelectedBtn"))deleteSelected()
 });
 document.addEventListener("click",function(e){
