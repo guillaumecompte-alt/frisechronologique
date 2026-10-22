@@ -349,11 +349,11 @@ function renderSvg(){
    const labelY=314+lane*31;
    out.push(line(x,top+bh,bx+boxW/2,labelY,'stroke="#8993a3" stroke-width="1.1"'));
    out.push('<circle cx="'+x+'" cy="'+(top+bh)+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
-   const labelH=e.image?78:42;
+   const labelH=e.image?112:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
-   if(e.image)out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+boxW/2-15)+'" y="'+(labelY+5)+'" width="30" height="30" preserveAspectRatio="xMidYMid meet"/>');
+   if(e.image)out.push('<image href="'+escapeHtml(e.image)+'" x="'+(bx+8)+'" y="'+(labelY+6)+'" width="'+(boxW-16)+'" height="62" preserveAspectRatio="xMidYMid meet"/>');
    out.push(text(bx+boxW/2,labelY+(e.image?83:15),e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?66:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }
  });
  // Dates : on conserve chaque repère et on répartit les étiquettes sur plusieurs lignes.
