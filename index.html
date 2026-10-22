@@ -249,10 +249,10 @@ function getScale(){
 function pathPeriod(p,scale,top,height){
  let a=Number(p.start),b=Number(p.end),x1=scale.map(a),x2=scale.map(b);
  if(b<Number(state.timeline.start)||a>Number(state.timeline.end))return "";
- const waveL=state.compressions.find(function(c){return Number(c.start)===a&&c.style==="wave"});
- const waveR=state.compressions.find(function(c){return Number(c.end)===b&&c.style==="wave"});
- const dottedL=state.compressions.find(function(c){return Number(c.start)===a&&c.style==="dotted"});
- const dottedR=state.compressions.find(function(c){return Number(c.end)===b&&c.style==="dotted"});
+ const waveL=null;
+ const waveR=null;
+ const dottedL=state.compressions.find(function(c){return Number(c.start)===a});
+ const dottedR=state.compressions.find(function(c){return Number(c.end)===b});
  let pts=[];
  function edge(x,dir,kind){
   if(kind){let s="";for(let j=0;j<=10;j++){let yy=top+height*j/10;let xx=x+(kind==="wave"?Math.sin(j*Math.PI*1.7)*4:0);if(j===0)s+="M"+xx.toFixed(2)+" "+yy.toFixed(2);else s+=" L"+xx.toFixed(2)+" "+yy.toFixed(2)}return s}
@@ -386,8 +386,8 @@ function renderSvg(){
  state.compressions.forEach(function(c){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
   const x1=scale.map(c.start),x2=scale.map(c.end);
-  const cue=c.color||"#66758b";
-  if(c.style==="wave"){
+  const cue="#000000";
+  if(false){
    // Forme ondulée fermée : seule son aire intérieure est teintée.
    // Le reste du rectangle garde son fond neutre.
    let d="M"+x1.toFixed(2)+" "+top+" ";
@@ -411,7 +411,7 @@ function renderSvg(){
     const mid=(x1+x2)/2;
     const label=(c.name||"Temps condensé").trim();
     if(label){const fs=(x2-x1)<100?9:(x2-x1)<160?10:13;out.push(text(mid,top+bh/2+4,escapeHtml(label.toUpperCase()),'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" letter-spacing=".1" pointer-events="none"'));}
-    if(x2-x1>85)out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
+    if(x2-x1>85)out.push(text(mid,top+bh+54,"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
    }
   });
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
@@ -431,7 +431,7 @@ function addItem(type){
  }else if(type==="event"){
   const item={id:uid(),title:"Nouvel événement",date:800,description:"",position:"top"};state.events.push(item);selected={type:"event",id:item.id}
  }else{
-  const item={id:uid(),name:"Temps condensé",start:-100000,end:-10000,style:"wave",color:"#66758b",weight:28};state.compressions.push(item);selected={type:"break",id:item.id}
+  const item={id:uid(),name:"Temps condensé",start:-100000,end:-10000,style:"dotted",color:"#66758b",weight:28};state.compressions.push(item);selected={type:"break",id:item.id}
  }
  renderLists();renderEditor();renderSvg();saveState();document.getElementById("editorPanel").scrollIntoView({behavior:"smooth",block:"nearest"});toast("Élément ajouté. Modifie ses propriétés puis enregistre.")
 }
@@ -463,7 +463,7 @@ function saveItemForm(ev){
   const name=(value("itemName")||"").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
   if(!name){toast("Donne un nom au temps condensé.",true);return}
   if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : le début doit précéder la fin et l'année 0 n'est pas admise.",true);return}
-  item.name=name;item.start=start;item.end=end;item.style=value("itemStyle")||"wave";
+  item.name=name;item.start=start;item.end=end;item.style="dotted";
   const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
  }
  renderLists();renderEditor();renderSvg();saveState();toast("Modifications enregistrées.")
@@ -540,7 +540,6 @@ document.getElementById("editorContent").addEventListener("input",function(ev){
    const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
    if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
   }
-  if(el.id==="itemStyle")item.style=el.value;
  }
  renderSvg();renderLists();saveState();
 });
