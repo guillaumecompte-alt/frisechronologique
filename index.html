@@ -390,15 +390,21 @@ function renderSvg(){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
   const x1=scale.map(c.start),x2=scale.map(c.end);
   const cue=c.color||"#66758b";
-  // Le segment condensé lui-même prend la couleur choisie, pas uniquement ses bordures.
-  out.push('<rect x="'+x1.toFixed(2)+'" y="'+top+'" width="'+Math.max(1,x2-x1).toFixed(2)+'" height="'+bh+'" fill="'+escapeHtml(cue)+'" fill-opacity=".22" stroke="'+escapeHtml(cue)+'" stroke-width="1.5" pointer-events="none"/>');
   if(c.style==="wave"){
-   // Ondulations horizontales sur toute la longueur, plus ondulations verticales aux extrémités.
-   [top+5,top+bh-5].forEach(function(y){let d="";for(let k=0;k<=40;k++){const x=x1+(x2-x1)*k/40,yy=y+Math.sin(k/40*Math.PI*8)*2.6;d+=(k===0?"M":" L")+x.toFixed(2)+" "+yy.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
-   [x1,x2].forEach(function(x){let d="";for(let k=0;k<=10;k++){const y=top+k*bh/10,xx=x+Math.sin(k*Math.PI*1.7)*4;d+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')})
+   // Forme ondulée fermée : seule son aire intérieure est teintée.
+   // Le reste du rectangle garde son fond neutre.
+   let d="M"+x1.toFixed(2)+" "+top+" ";
+   for(let k=0;k<=40;k++){const x=x1+(x2-x1)*k/40,y=top+Math.sin(k/40*Math.PI*8)*4;d+="L"+x.toFixed(2)+" "+y.toFixed(2)+" "}
+   d+="L"+x2.toFixed(2)+" "+(top+bh)+" ";
+   for(let k=40;k>=0;k--){const x=x1+(x2-x1)*k/40,y=top+bh+Math.sin(k/40*Math.PI*8)*4;d+="L"+x.toFixed(2)+" "+y.toFixed(2)+" "}
+   d+="Z";
+   out.push('<path d="'+d+'" fill="'+escapeHtml(cue)+'" fill-opacity=".28" stroke="'+escapeHtml(cue)+'" stroke-width="1.6" pointer-events="none"/>');
+   // Les bords latéraux restent ondulés.
+   [x1,x2].forEach(function(x,side){let edge="";for(let k=0;k<=20;k++){const y=top+bh*k/20,xx=x+Math.sin(k/20*Math.PI*4)*4;edge+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+edge+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
   }else{
-   [top+4,top+bh-4].forEach(function(y){out.push(line(x1,y,x2,y,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))});
-   [x1,x2].forEach(function(x){out.push(line(x,top,x,top+bh,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))})
+   // En pointillé, seuls les deux côtés verticaux du rectangle sont pointillés.
+   out.push('<rect x="'+x1.toFixed(2)+'" y="'+top+'" width="'+Math.max(1,x2-x1).toFixed(2)+'" height="'+bh+'" fill="'+escapeHtml(cue)+'" fill-opacity=".10" stroke="none" pointer-events="none"/>');
+   [x1,x2].forEach(function(x){out.push(line(x,top,x,top+bh,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))});
   }
   if(x2-x1>85){
    const mid=(x1+x2)/2;
