@@ -413,6 +413,7 @@ function renderSvg(){
     if(label)out.push(text(mid,top+bh/2+4,escapeHtml(label),'text-anchor="middle" font-size="10" font-weight="700" fill="#263247" pointer-events="none"'));
     if(x2-x1>85)out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
    }
+  });
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
