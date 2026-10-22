@@ -642,8 +642,11 @@ timelineSvg.addEventListener("click",function(e){
  if(e.target.closest("[data-event-dot]")||e.target.closest("[data-period-handle]"))return;
  const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
  const year=inverseScale(pt.x);
- const item={id:uid(),title:"Nouvel événement",date:year,description:"",position:"top"};
- state.events.push(item);selected={type:"event",id:item.id};refresh();toast("Événement ajouté à "+fmtYear(year)+". Complète son nom dans le formulaire.")
+ const period=state.periods.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year;});
+ if(period){selected={type:"period",id:period.id};renderEditor();renderLists();toast("Période sélectionnée : personnalise-la dans le panneau.");return;}
+ const compressed=state.compressions.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year;});
+ if(compressed){selected={type:"break",id:compressed.id};renderEditor();renderLists();toast("Temps condensé sélectionné : personnalise-le dans le panneau.");return;}
+ toast("Clique sur une période ou un temps condensé pour le personnaliser.");
 });
 
 document.getElementById("editorContent").addEventListener("click",function(e){
