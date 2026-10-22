@@ -202,7 +202,6 @@ function renderEditor(){
   html+='<div class="field"><label for="itemStart">Début du segment</label><input id="itemStart" name="itemStart" type="number" step="1" value="'+item.start+'" required></div>';
   html+=field("itemEnd","Fin du segment",item.end,"number",'required');
   html+='<div class="field"><label>Couleur du temps condensé</label>'+paletteHtml(item.color||"#66758b")+'</div>';
-  html+='<div class="field"><label for="itemStyle">Style de rupture</label><select id="itemStyle" name="itemStyle"><option value="wave" '+(item.style==="wave"?"selected":"")+'>Bords ondulés</option><option value="dotted" '+(item.style==="dotted"?"selected":"")+'>Bords pointillés</option></select></div>';
   html+='<p class="field-help">Le segment indique visuellement que la durée est condensée. Il ne change aucune date.</p>';
  }
  html+='<div class="editor-actions"><button class="btn primary" type="submit">Enregistrer</button><button class="btn danger" type="button" id="deleteSelectedBtn">Supprimer</button></div></form>';
