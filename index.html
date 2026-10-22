@@ -198,6 +198,7 @@ function renderEditor(){
   html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
   html+='<div class="field"><label for="itemPosition">Position de l\'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
  }else{
+  html+=field("itemName","Nom du temps condensé",item.name||"Temps condensé","text",'maxlength="100" required');
   html+='<div class="field"><label for="itemStart">Début du segment</label><input id="itemStart" name="itemStart" type="number" step="1" value="'+item.start+'" required></div>';
   html+=field("itemEnd","Fin du segment",item.end,"number",'required');
   html+='<div class="field"><label>Couleur du temps condensé</label>'+paletteHtml(item.color||"#66758b")+'</div>';
@@ -381,17 +382,6 @@ function renderSvg(){
   H=Math.max(H,top+bh+48+lanes.length*23+30);
   out[3]=out[3].replace('height="420"','height="'+H+'"');
  }
- // Direct manipulation: draggable handles adjust the visual break boundaries.
- state.compressions.forEach(function(comp){
-  if(Number(comp.end)<lo||Number(comp.start)>hi)return;
-  const x1=scale.map(comp.start),x2=scale.map(comp.end),mid=(x1+x2)/2;
-  out.push('<g class="break-handles" data-break-id="'+escapeHtml(comp.id)+'" style="cursor:ew-resize">');
-  out.push('<rect x="'+(x1-9)+'" y="'+(top-7)+'" width="18" height="'+(bh+14)+'" rx="5" fill="#fff" fill-opacity=".01" stroke="none" data-break-handle="start" data-break-id="'+escapeHtml(comp.id)+'"/>');
-  out.push('<rect x="'+(x2-9)+'" y="'+(top-7)+'" width="18" height="'+(bh+14)+'" rx="5" fill="#fff" fill-opacity=".01" stroke="none" data-break-handle="end" data-break-id="'+escapeHtml(comp.id)+'"/>');
-  out.push('<rect x="'+(x1-3)+'" y="'+(top+bh/2-13)+'" width="6" height="26" rx="3" fill="#fff" stroke="#7c8798" stroke-width="1.4" pointer-events="none"/>');
-  out.push('<rect x="'+(x2-3)+'" y="'+(top+bh/2-13)+'" width="6" height="26" rx="3" fill="#fff" stroke="#7c8798" stroke-width="1.4" pointer-events="none"/>');
-  out.push('</g>');
- });
  // Dotted or wavy cues are drawn explicitly so breaks remain visible in the exported SVG.
  state.compressions.forEach(function(c){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
@@ -409,18 +399,20 @@ function renderSvg(){
    // Les bords latéraux restent ondulés.
    [x1,x2].forEach(function(x,side){let edge="";for(let k=0;k<=20;k++){const y=top+bh*k/20,xx=x+Math.sin(k/20*Math.PI*4)*4;edge+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+edge+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
   }else{
-   // Ne pas recouvrir les périodes colorées : seuls les bords matérialisent la compression.
+    // Fond légèrement teinté sous les bords pointillés.
+    out.push('<rect x="'+x1+'" y="'+top+'" width="'+Math.max(0,x2-x1)+'" height="'+bh+'" fill="'+escapeHtml(cue)+'" fill-opacity=".22" pointer-events="none"/>');
    const dash='stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5" fill="none"';
    out.push(line(x1,top,x2,top,dash));
    out.push(line(x1,top+bh,x2,top+bh,dash));
    out.push(line(x1,top,x1,top+bh,dash));
    out.push(line(x2,top,x2,top+bh,dash));
   }
-  if(x2-x1>85){
-   const mid=(x1+x2)/2;
-   out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
-  }
- });
+   if(x2-x1>8){
+    const mid=(x1+x2)/2;
+    const label=(c.name||"Temps condensé").trim();
+    if(label)out.push(text(mid,top+bh/2+4,escapeHtml(label),'text-anchor="middle" font-size="10" font-weight="700" fill="#263247" pointer-events="none"'));
+    if(x2-x1>85)out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
+   }
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
@@ -611,7 +603,7 @@ timelineSvg.addEventListener("pointerup",function(e){
 });
 timelineSvg.addEventListener("click",function(e){
  if(suppressTimelineClick){suppressTimelineClick=false;return}
- if(e.target.closest("[data-event-dot]")||e.target.closest("[data-break-handle]")||e.target.closest("[data-period-handle]"))return;
+ if(e.target.closest("[data-event-dot]")||e.target.closest("[data-period-handle]"))return;
  const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
  const year=inverseScale(pt.x);
  const item={id:uid(),title:"Nouvel événement",date:year,description:"",position:"top"};
