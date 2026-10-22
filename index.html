@@ -415,6 +415,8 @@ function renderSvg(){
     if(x2-x1>85)out.push(text(mid,top+bh+54,"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
    }
   });
+ // Repère rouge dessiné au premier plan afin qu’il traverse aussi les zones condensées et colorées.
+ if(lo<=-1&&hi>=1){const birthX=(scale.map(-1)+scale.map(1))/2;out.push(line(birthX,top,birthX,top+bh+10,'stroke="#ef4036" stroke-width="2.1" pointer-events="none"'));}
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
