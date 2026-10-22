@@ -120,6 +120,8 @@ function examples(){return {
   {id:"p-con",name:"ÉPOQUE CONTEMPORAINE",start:1789,end:2026,color:"#ffbd2e"}
  ],
  events:[
+  {id:"e-humains",title:"Premiers hommes",date:-2500000,description:"Repère très approximatif des premiers représentants du genre Homo.",position:"top"},
+  {id:"e-ecriture",title:"Débuts de l’écriture",date:-3500,description:"Repère conventionnel du développement des premières formes d’écriture.",position:"top"},
   {id:"e-rome",title:"Fin de l’Empire romain",date:476,description:"Chute de l’Empire romain d’Occident (date conventionnelle).",position:"top"},
   {id:"e-amerique",title:"Découverte de l’Amérique",date:1492,description:"Voyage de Christophe Colomb vers les Amériques.",position:"top"},
   {id:"e-revolution",title:"Révolution française",date:1789,description:"Début de la Révolution française.",position:"top"}
@@ -196,12 +198,12 @@ function renderEditor(){
   html+=field("itemName","Nom de la période",item.name,"text",'maxlength="100" required');
   html+='<div class="two-col">'+field("itemStart","Début (année)",item.start,"number",'required')+field("itemEnd","Fin (année)",item.end,"number",'required')+'</div>';
   html+='<div class="field"><label>Couleur de la période</label>'+paletteHtml(item.color)+'</div>';
-  html+='<p class="field-help">Le nom apparaît à l'intérieur de la bande colorée lorsque l'espace le permet.</p>';
+  html+='<p class="field-help">Le nom apparaît à l\'intérieur de la bande colorée lorsque l\'espace le permet.</p>';
  }else if(selected.type==="event"){
   html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
   html+=field("itemDate","Date de l'événement",item.date,"number",'required');
   html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
-  html+='<div class="field"><label for="itemPosition">Position de l'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
+  html+='<div class="field"><label for="itemPosition">Position de l\'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
  }else{
   html+='<div class="field"><label for="itemStart">Début du segment</label><input id="itemStart" name="itemStart" type="number" step="1" value="'+item.start+'" required></div>';
   html+=field("itemEnd","Fin du segment",item.end,"number",'required');
@@ -436,7 +438,7 @@ function updateTimeline(ev){
  if(!validYear(start)||!validYear(end)||start>=end){toast("Plage de dates invalide : choisis deux années sans année 0, avec un début avant la fin.",true);return}
  state.timeline={title:title,start:start,end:end};refresh();toast("Frise mise à jour.")
 }
-function projectFilename(ext){return (state.timeline.title||"frise-chronologique").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"frise-chronologique")+"."+ext}
+function projectFilename(ext){return ((state.timeline.title||"frise-chronologique").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"frise-chronologique")+"."+ext}
 function downloadBlob(blob,name){
  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1200)
 }
