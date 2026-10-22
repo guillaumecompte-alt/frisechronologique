@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f7f3">
+<meta name="description" content="Créez des frises chronologiques illustrées, modifiables et exportables.">
+<title>Frise Studio — Créateur de frises chronologiques</title>
+<style>
+:root{--ink:#202d43;--muted:#697386;--paper:#f8f7f3;--surface:#fff;--line:#e5e4de;--red:#ef4036;--blue:#8cb4e2;--pink:#e6b8ba;--ochre:#cda071;--yellow:#ffd34f;--gold:#ffbd2e;--shadow:0 10px 32px rgba(32,45,67,.055);--radius:18px}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.45}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #8cb4e2;outline-offset:2px}.app-header{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:16px;position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:12px;min-width:210px}.logo{width:40px;height:40px;background:var(--red);border-radius:12px;display:grid;place-items:center;color:white;box-shadow:0 5px 14px #ef40362b}.brand strong{font-size:17px;letter-spacing:-.4px;display:block}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:1px}.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.save-status{font-size:11px;color:#518267;margin-right:7px;white-space:nowrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #deded8;background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px;font-weight:650;font-size:12px;transition:.15s ease;white-space:nowrap}.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px #202d430d;border-color:#c8c8c0}.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.primary:hover{background:#34445e}.btn.accent{background:var(--red);color:#fff;border-color:var(--red)}.btn.soft{background:#f5f4f0}.btn.danger{color:#b42318;border-color:#f0c9c5}.btn.small{padding:7px 9px;font-size:11px}.icon{font-size:15px;line-height:1}.layout{max-width:1800px;margin:0 auto;padding:24px;display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;align-items:start}.sidebar{display:flex;flex-direction:column;gap:14px}.panel,.preview-card,.intro-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.panel{padding:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:1.3px;font-weight:800;text-transform:uppercase}.section-head h2{font-size:14px;margin:0;letter-spacing:-.2px}.section-head .num{font-size:11px;color:var(--muted);background:#f1f0eb;padding:3px 7px;border-radius:6px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field:last-child{margin-bottom:0}.field label{font-size:11px;font-weight:750;color:#586276}.field input,.field select,.field textarea{width:100%;border:1px solid #deded8;border-radius:9px;background:#fff;padding:9px 10px;color:var(--ink);min-width:0}.field textarea{min-height:74px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#94a8c3;outline:none;box-shadow:0 0 0 3px #8cb4e222}.field-help{font-size:10px;color:var(--muted);line-height:1.5}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:9px}.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.action-grid .btn{white-space:normal;text-align:left;justify-content:flex-start;min-height:54px;padding:10px;font-size:11px;line-height:1.25}.action-grid .btn .icon{font-size:18px}.list-stack{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}.item-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#fff;border:1px solid transparent;border-radius:10px;padding:9px 9px;color:var(--ink)}.item-row:hover{background:#f8f7f3}.item-row.selected{border-color:#c8d6e7;background:#f2f6fb}.swatch{width:9px;height:32px;border-radius:5px;flex:0 0 auto}.item-row .item-label{min-width:0;flex:1}.item-row strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.item-row .edit-icon{color:#8a94a3;font-size:13px}.empty-list{font-size:11px;color:var(--muted);padding:10px 4px}.editor-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.palette{display:flex;gap:8px;flex-wrap:wrap}.color-choice{width:27px;height:27px;border:2px solid #fff;outline:1px solid #d5d5ce;border-radius:8px;padding:0}.color-choice.active{outline:2px solid var(--ink);outline-offset:2px}.checkrow{display:flex;align-items:center;gap:8px;font-size:11px;color:#596579;margin:10px 0}.checkrow input{accent-color:var(--ink)}.content{min-width:0;display:flex;flex-direction:column;gap:18px}.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:4px 4px 2px}.intro h1{font-size:26px;letter-spacing:-1.1px;margin:5px 0 4px;line-height:1.12}.intro p{color:var(--muted);margin:0;font-size:12px;max-width:630px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #deded8;background:#fff;padding:6px 10px;border-radius:100px;color:#596579;font-size:10px;font-weight:750;white-space:nowrap}.pill .dot{width:6px;height:6px;border-radius:50%;background:#57a879}.preview-card{overflow:hidden}.preview-toolbar{display:flex;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line);gap:12px}.preview-toolbar h2{font-size:14px;margin:0 0 3px}.preview-toolbar p{font-size:11px;color:var(--muted);margin:0}.preview-toolbar .right{display:flex;gap:8px;align-items:center}.stage{padding:12px 12px 0;overflow-x:auto;background:#fff}.timeline-svg{width:100%;min-width:720px;display:block;height:auto}.preview-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 20px;border-top:1px solid var(--line);background:#fdfdfb}.preview-foot .note{font-size:10px;color:var(--muted);max-width:670px}.preview-foot strong{color:#536276}.stats{display:flex;gap:16px;color:var(--muted);font-size:10px;white-space:nowrap}.help-card{border:1px solid #ead9c3;background:#fcf5e9;border-radius:14px;padding:15px 17px;display:flex;gap:12px;align-items:flex-start}.help-icon{background:#f4e0bf;color:#805c26;border-radius:9px;width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto}.help-card h3{margin:0 0 4px;font-size:12px}.help-card p{margin:0;color:#746346;font-size:11px;line-height:1.6}.bottom-note{text-align:center;font-size:10px;color:#9298a3;margin:0 0 8px}.hidden{display:none!important}.mobile-tools{display:none}.notice{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#202d43;color:white;padding:10px 16px;border-radius:12px;box-shadow:0 8px 28px #202d4333;font-size:12px;z-index:100;max-width:90vw}.notice.error{background:#9b2c28}.divider{border:0;border-top:1px solid var(--line);margin:15px 0}.editor-empty{border:1px dashed #d7d7d0;border-radius:10px;padding:18px 12px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
+@media(max-width:1100px){.layout{grid-template-columns:285px minmax(0,1fr);padding:16px;gap:15px}.app-header{padding:0 18px}.header-actions .optional{display:none}.intro h1{font-size:23px}}
+@media(max-width:800px){.app-header{height:auto;min-height:72px;padding:12px 15px;align-items:flex-start}.brand{min-width:unset}.brand small{display:none}.header-actions{gap:6px}.header-actions .save-status{display:none}.header-actions .btn{padding:8px;font-size:11px}.layout{grid-template-columns:1fr;padding:12px}.content{order:0}.sidebar{order:1;display:grid;grid-template-columns:1fr 1fr;align-items:start}.sidebar .settings-panel{grid-column:1/-1}.sidebar .editor-panel{grid-column:1/-1}.intro{align-items:flex-start}.intro h1{font-size:22px}.intro .pill{display:none}.preview-toolbar{padding:14px}.preview-foot{align-items:flex-start;flex-direction:column}.stats{flex-wrap:wrap}.list-stack{max-height:200px}}
+@media(max-width:480px){.logo{width:34px;height:34px}.brand strong{font-size:14px}.app-header{gap:8px}.header-actions .mobile-hide{display:none}.layout{padding:9px}.sidebar{display:flex}.intro h1{font-size:20px}.intro p{font-size:11px}.preview-toolbar .right .btn{padding:7px 8px}.preview-toolbar .right .optional{display:none}.stage{padding:4px 5px 0}}
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="white" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="6" r="2" fill="#ef4036" stroke="white" stroke-width="1.5"/><circle cx="15" cy="12" r="2" fill="#ef4036" stroke="white" stroke-width="1.5"/><circle cx="19" cy="18" r="2" fill="#ef4036" stroke="white" stroke-width="1.5"/></svg></div>
+    <div><strong>Frise Studio</strong><small>L'atelier des chronologies</small></div>
+  </div>
+  <div class="header-actions">
+    <span id="saveStatus" class="save-status">● Sauvegarde locale active</span>
+    <button class="btn optional" id="importBtn" type="button"><span class="icon">↥</span> Importer JSON</button>
+    <button class="btn optional" id="jsonBtn" type="button"><span class="icon">↧</span> Projet JSON</button>
+    <button class="btn mobile-hide" id="svgBtn" type="button"><span class="icon">◇</span> SVG</button>
+    <button class="btn primary" id="pngBtn" type="button"><span class="icon">↓</span> Exporter PNG</button>
+    <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" aria-label="Outils de création">
+    <section class="panel settings-panel">
+      <div class="section-head"><div><div class="eyebrow">Configuration</div><h2>Ma frise</h2></div><span class="num">01</span></div>
+      <form id="timelineForm">
+        <div class="field"><label for="timelineTitle">Titre de la frise</label><input id="timelineTitle" name="title" maxlength="100" value="Les grandes périodes de l'Histoire" required></div>
+        <div class="two-col">
+          <div class="field"><label for="timelineStart">Date de début</label><input id="timelineStart" name="start" type="number" step="1" value="-2500000" required></div>
+          <div class="field"><label for="timelineEnd">Date de fin</label><input id="timelineEnd" name="end" type="number" step="1" value="2026" required></div>
+        </div>
+        <div class="field-help">Avant notre ère : année négative (−3500). Après notre ère : année positive (476). L'année 0 n'est pas utilisée comme date.</div>
+        <div class="editor-actions"><button class="btn primary" type="submit">Mettre à jour</button><button class="btn" type="button" id="resetBtn">Réinitialiser</button></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-head"><div><div class="eyebrow">Construire</div><h2>Ajouter un élément</h2></div><span class="num">02</span></div>
+      <div class="action-grid">
+        <button class="btn" id="addPeriodBtn" type="button"><span class="icon">▰</span><span>Nouvelle<br>période</span></button>
+        <button class="btn" id="addEventBtn" type="button"><span class="icon">◆</span><span>Événement<br>daté</span></button>
+        <button class="btn" id="addBreakBtn" type="button"><span class="icon">〰</span><span>Temps<br>condensé</span></button>
+        <button class="btn" id="birthBtn" type="button"><span class="icon" style="color:var(--red)">│</span><span>Repère de<br>l'an 1</span></button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head"><div><div class="eyebrow">Votre frise</div><h2>Périodes</h2></div><span class="num" id="periodCount">5</span></div>
+      <div class="list-stack" id="periodList"></div>
+    </section>
+    <section class="panel">
+      <div class="section-head"><div><div class="eyebrow">Repères</div><h2>Événements</h2></div><span class="num" id="eventCount">3</span></div>
+      <div class="list-stack" id="eventList"></div>
+    </section>
+    <section class="panel">
+      <div class="section-head"><div><div class="eyebrow">Échelle</div><h2>Temps condensés</h2></div><span class="num" id="breakCount">1</span></div>
+      <div class="list-stack" id="breakList"></div>
+    </section>
+
+    <section class="panel editor-panel" id="editorPanel">
+      <div class="section-head"><div><div class="eyebrow">Personnaliser</div><h2 id="editorTitle">Modifier l'élément</h2></div><span class="num">✎</span></div>
+      <div id="editorContent"></div>
+    </section>
+  </aside>
+
+  <main class="content">
+    <div class="intro">
+      <div><div class="eyebrow">Création pédagogique</div><h1 id="pageTitle">Les grandes périodes de l'Histoire</h1><p>Compose une chronologie claire, colore les périodes et place les événements essentiels.</p></div>
+      <span class="pill"><span class="dot"></span> Projet enregistré sur cet appareil</span>
+    </div>
+    <section class="preview-card">
+      <div class="preview-toolbar">
+        <div><h2>Aperçu de la frise</h2><p>Les dates et les étiquettes se mettent à jour à chaque modification.</p></div>
+        <div class="right"><button class="btn small optional" type="button" id="svgBtn2">Télécharger SVG</button><button class="btn small primary" type="button" id="pngBtn2">Télécharger PNG</button></div>
+      </div>
+      <div class="stage" id="stage"><svg id="timelineSvg" class="timeline-svg" role="img" aria-label="Frise chronologique"></svg></div>
+      <div class="preview-foot">
+        <div class="note"><strong>Lecture de la frise.</strong> La largeur de certains segments peut être volontairement réduite. Les bords ondulés et pointillés signalent alors une durée condensée : l'échelle n'est plus proportionnelle au temps réel.</div>
+        <div class="stats"><span id="periodStat">5 périodes</span><span id="eventStat">3 événements</span><span id="breakStat">1 rupture</span></div>
+      </div>
+    </section>
+    <section class="help-card">
+      <div class="help-icon" aria-hidden="true">i</div>
+      <div><h3>Pourquoi une frise peut-elle ne pas être proportionnelle ?</h3><p>Des millions d'années de préhistoire prendraient presque toute la place si chaque année avait la même largeur. Un segment condensé représente donc une très longue durée dans un espace plus court. Tu peux en ajouter, en déplacer les dates et choisir entre un bord ondulé ou pointillé. Les dates restent les tiennes ; seule la représentation visuelle change.</p></div>
+    </section>
+    <p class="bottom-note">Frise Studio · Outil de création chronologique · Les données restent dans ton navigateur tant que tu ne les exportes pas.</p>
+  </main>
+</div>
+<div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+const STORAGE_KEY="frise-studio-project-v1";
+const COLORS=[
+ {name:"Rose",value:"#e6b8ba"},{name:"Bleu",value:"#8cb4e2"},{name:"Ocre",value:"#cda071"},
+ {name:"Jaune",value:"#ffd34f"},{name:"Doré",value:"#ffbd2e"},{name:"Vert",value:"#b9d5bd"},
+ {name:"Lavande",value:"#c9c1e8"},{name:"Corail",value:"#f0a28a"},{name:"Gris",value:"#d5d8dc"}
+];
+function uid(){return "id-"+Math.random().toString(36).slice(2,10)+"-"+Date.now().toString(36)}
+function examples(){return {
+ version:1,
+ timeline:{title:"Les grandes périodes de l'Histoire",start:-2500000,end:2026},
+ periods:[
+  {id:"p-pre",name:"PRÉHISTOIRE",start:-2500000,end:-3500,color:"#e6b8ba"},
+  {id:"p-ant",name:"ANTIQUITÉ",start:-3500,end:476,color:"#8cb4e2"},
+  {id:"p-med",name:"MOYEN ÂGE",start:476,end:1492,color:"#cda071"},
+  {id:"p-mod",name:"ÉPOQUE MODERNE",start:1492,end:1789,color:"#ffd34f"},
+  {id:"p-con",name:"ÉPOQUE CONTEMPORAINE",start:1789,end:2026,color:"#ffbd2e"}
+ ],
+ events:[
+  {id:"e-rome",title:"Fin de l’Empire romain",date:476,description:"Chute de l’Empire romain d’Occident (date conventionnelle).",position:"top"},
+  {id:"e-amerique",title:"Découverte de l’Amérique",date:1492,description:"Voyage de Christophe Colomb vers les Amériques.",position:"top"},
+  {id:"e-revolution",title:"Révolution française",date:1789,description:"Début de la Révolution française.",position:"top"}
+ ],
+ compressions:[{id:"c-pre",start:-2500000,end:-3500,style:"wave"}]
+}}
+let state;
+let selected={type:"period",id:"p-pre"};
+let noticeTimer=null;
+function validYear(v){return Number.isInteger(Number(v))&&Number(v)!==0&&Number.isFinite(Number(v))}
+function histOrd(y){y=Number(y);return y<0?y+1:y}
+function yearDate(y){return validYear(y)?Number(y):null}
+function fmtYear(y,short){
+ y=Number(y);
+ if(y===0)return "Naissance de Jésus";
+ if(Math.abs(y)>=1000000)return (Math.abs(y)/1000000).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Ma";
+ if(Math.abs(y)>=100000)return (Math.abs(y)/1000).toLocaleString("fr-FR",{maximumFractionDigits:0})+" ka";
+ const n=Math.abs(y).toLocaleString("fr-FR");
+ if(y<0)return short?n+" av. J.-C.":n+" av. J.-C.";
+ return short?n+" ap. J.-C.":n+" ap. J.-C.";
+}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function loadState(){
+ try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const v=JSON.parse(raw);if(v&&v.timeline&&Array.isArray(v.periods)&&Array.isArray(v.events)&&Array.isArray(v.compressions))return v}}catch(e){}
+ return examples()
+}
+state=loadState();
+function saveState(){
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));document.getElementById("saveStatus").textContent="● Enregistré localement"}catch(e){document.getElementById("saveStatus").textContent="Sauvegarde indisponible"}
+}
+function toast(message,error){
+ const el=document.getElementById("notice");el.textContent=message;el.classList.remove("hidden","error");if(error)el.classList.add("error");
+ if(noticeTimer)clearTimeout(noticeTimer);noticeTimer=setTimeout(function(){el.classList.add("hidden")},3200)
+}
+function currentItem(){return (selected.type==="period"?state.periods:selected.type==="event"?state.events:state.compressions).find(function(x){return x.id===selected.id})}
+function updateCounts(){
+ document.getElementById("periodCount").textContent=state.periods.length;
+ document.getElementById("eventCount").textContent=state.events.length;
+ document.getElementById("breakCount").textContent=state.compressions.length;
+ document.getElementById("periodStat").textContent=state.periods.length+" période"+(state.periods.length>1?"s":"");
+ document.getElementById("eventStat").textContent=state.events.length+" événement"+(state.events.length>1?"s":"");
+ document.getElementById("breakStat").textContent=state.compressions.length+" rupture"+(state.compressions.length>1?"s":"")
+}
+function renderLists(){
+ const defs=[
+  {type:"period",el:"periodList",items:state.periods,title:function(i){return i.name},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color}},
+  {type:"event",el:"eventList",items:state.events,title:function(i){return i.title},sub:function(i){return fmtYear(i.date,true)},color:function(){return "#ef4036"}},
+  {type:"break",el:"breakList",items:state.compressions,title:function(i){return "Temps condensé"},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(){return "#66758b"}}
+ ];
+ defs.forEach(function(d){
+  const el=document.getElementById(d.el);
+  if(!d.items.length){el.innerHTML='<div class="empty-list">Aucun élément pour le moment.</div>';return}
+  el.innerHTML=d.items.map(function(i){
+   return '<button type="button" class="item-row '+(selected.type===d.type&&selected.id===i.id?"selected":"")+'" data-select-type="'+d.type+'" data-select-id="'+escapeHtml(i.id)+'"><span class="swatch" style="background:'+d.color(i)+'"></span><span class="item-label"><strong>'+escapeHtml(d.title(i))+'</strong><small>'+escapeHtml(d.sub(i))+'</small></span><span class="edit-icon">✎</span></button>'
+  }).join("")
+ });
+ updateCounts()
+}
+function paletteHtml(active){
+ return '<div class="palette" role="group" aria-label="Palette de couleurs">'+COLORS.map(function(c){
+  return '<button type="button" class="color-choice '+(active===c.value?"active":"")+'" data-color="'+c.value+'" title="'+c.name+'" aria-label="Choisir la couleur '+c.name+'" style="background:'+c.value+'"></button>'
+ }).join("")+'</div>'
+}
+function field(id,label,value,type,extra){
+ const itype=type||"text";
+ return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" name="'+id+'" type="'+itype+'" value="'+escapeHtml(value)+'" '+(itype==="number"?'step="1"':'')+' '+(extra||"")+'></div>'
+}
+function renderEditor(){
+ const item=currentItem(),root=document.getElementById("editorContent");
+ document.getElementById("editorTitle").textContent=selected.type==="period"?"Modifier une période":selected.type==="event"?"Modifier un événement":"Modifier un temps condensé";
+ if(!item){root.innerHTML='<div class="editor-empty">Choisis un élément ci-dessus pour le modifier, ou crée-en un nouveau.</div>';return}
+ let html='<form id="itemForm" data-type="'+selected.type+'" data-id="'+escapeHtml(item.id)+'">';
+ if(selected.type==="period"){
+  html+=field("itemName","Nom de la période",item.name,"text",'maxlength="100" required');
+  html+='<div class="two-col">'+field("itemStart","Début (année)",item.start,"number",'required')+field("itemEnd","Fin (année)",item.end,"number",'required')+'</div>';
+  html+='<div class="field"><label>Couleur de la période</label>'+paletteHtml(item.color)+'</div>';
+  html+='<p class="field-help">Le nom apparaît à l'intérieur de la bande colorée lorsque l'espace le permet.</p>';
+ }else if(selected.type==="event"){
+  html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
+  html+=field("itemDate","Date de l'événement",item.date,"number",'required');
+  html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
+  html+='<div class="field"><label for="itemPosition">Position de l'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
+ }else{
+  html+='<div class="field"><label for="itemStart">Début du segment</label><input id="itemStart" name="itemStart" type="number" step="1" value="'+item.start+'" required></div>';
+  html+=field("itemEnd","Fin du segment",item.end,"number",'required');
+  html+='<div class="field"><label for="itemStyle">Style de rupture</label><select id="itemStyle" name="itemStyle"><option value="wave" '+(item.style==="wave"?"selected":"")+'>Bords ondulés</option><option value="dotted" '+(item.style==="dotted"?"selected":"")+'>Bords pointillés</option></select></div>';
+  html+='<p class="field-help">Le segment indique visuellement que la durée est condensée. Il ne change aucune date.</p>';
+ }
+ html+='<div class="editor-actions"><button class="btn primary" type="submit">Enregistrer</button><button class="btn danger" type="button" id="deleteSelectedBtn">Supprimer</button></div></form>';
+ root.innerHTML=html;
+}
+function refresh(){document.getElementById("pageTitle").textContent=state.timeline.title;document.getElementById("timelineTitle").value=state.timeline.title;document.getElementById("timelineStart").value=state.timeline.start;document.getElementById("timelineEnd").value=state.timeline.end;renderLists();renderEditor();renderSvg();saveState()}
+function colorForYear(y,scale){return scale.map(y)}
+function getScale(){
+ const lo=Number(state.timeline.start),hi=Number(state.timeline.end);
+ const vals=[lo,hi];
+ function add(y){y=Number(y);if(y>=lo&&y<=hi&&Number.isFinite(y))vals.push(y)}
+ state.periods.forEach(function(p){add(p.start);add(p.end)});
+ state.compressions.forEach(function(c){add(c.start);add(c.end)});
+ add(-1);add(1);
+ const unique=Array.from(new Set(vals)).sort(function(a,b){return histOrd(a)-histOrd(b)});
+ if(unique.length<2)return {map:function(){return 65},x0:65,x1:1335};
+ const intervals=[];let total=0;
+ for(let i=0;i<unique.length-1;i++){
+  const a=unique[i],b=unique[i+1],ordDelta=Math.max(.0001,histOrd(b)-histOrd(a));
+  const comp=state.compressions.find(function(c){return Number(c.start)===a&&Number(c.end)===b});
+  const weight=comp?28:Math.sqrt(ordDelta);
+  intervals.push({a:a,b:b,oa:histOrd(a),ob:histOrd(b),weight:weight,comp:comp});total+=weight
+ }
+ const X0=65,X1=1335,span=X1-X0;
+ let cursor=X0;
+ intervals.forEach(function(s){s.x0=cursor;s.x1=cursor+span*s.weight/total;cursor=s.x1});
+ function map(y){
+  y=Number(y);
+  if(y===0)return (map(-1)+map(1))/2;
+  const o=histOrd(y);
+  if(o<=intervals[0].oa)return X0;
+  if(o>=intervals[intervals.length-1].ob)return X1;
+  const seg=intervals.find(function(s){return o>=s.oa&&o<=s.ob});
+  if(!seg)return o<intervals[0].oa?X0:X1;
+  const ratio=(o-seg.oa)/(seg.ob-seg.oa);
+  return seg.x0+ratio*(seg.x1-seg.x0)
+ }
+ return {map:map,intervals:intervals,x0:X0,x1:X1}
+}
+function pathPeriod(p,scale,top,height){
+ let a=Number(p.start),b=Number(p.end),x1=scale.map(a),x2=scale.map(b);
+ if(b<Number(state.timeline.start)||a>Number(state.timeline.end))return "";
+ const waveL=state.compressions.find(function(c){return Number(c.start)===a&&c.style==="wave"});
+ const waveR=state.compressions.find(function(c){return Number(c.end)===b&&c.style==="wave"});
+ const dottedL=state.compressions.find(function(c){return Number(c.start)===a&&c.style==="dotted"});
+ const dottedR=state.compressions.find(function(c){return Number(c.end)===b&&c.style==="dotted"});
+ let pts=[];
+ function edge(x,dir,kind){
+  if(kind){let s="";for(let j=0;j<=10;j++){let yy=top+height*j/10;let xx=x+(kind==="wave"?Math.sin(j*Math.PI*1.7)*4:0);if(j===0)s+="M"+xx.toFixed(2)+" "+yy.toFixed(2);else s+=" L"+xx.toFixed(2)+" "+yy.toFixed(2)}return s}
+  return "M"+x.toFixed(2)+" "+top+" L"+x.toFixed(2)+" "+(top+height)
+ }
+ const leftKind=waveL?"wave":dottedL?"dotted":null,rightKind=waveR?"wave":dottedR?"dotted":null;
+ let d="M"+x1+" "+top+" ";
+ if(leftKind==="wave"){for(let j=0;j<=10;j++){d+=(j===0?"":" L")+(x1+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
+ else d+="L"+x1+" "+(top+height)+" ";
+ d+="L"+x2+" "+(top+height)+" ";
+ if(rightKind==="wave"){for(let j=10;j>=0;j--){d+="L"+(x2+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
+ else d+="L"+x2+" "+top+" ";
+ d+="Z";
+ return '<path d="'+d+'" fill="'+escapeHtml(p.color)+'" stroke="'+escapeHtml(p.color)+'" stroke-width="1"/>'+
+ (leftKind==="dotted"?'<path d="M'+x1+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")+
+ (rightKind==="dotted"?'<path d="M'+x2+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")
+}
+function renderSvg(){
+ const svg=document.getElementById("timelineSvg");if(!svg)return;
+ const W=1400,H=420,top=178,bh=80,scale=getScale(),lo=Number(state.timeline.start),hi=Number(state.timeline.end);
+ const out=[];
+ function line(x1,y1,x2,y2,attrs){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" '+(attrs||"")+'/>'}
+ function text(x,y,t,attrs){return '<text x="'+x+'" y="'+y+'" '+(attrs||"")+'>'+escapeHtml(t)+'</text>'}
+ out.push('<title>'+escapeHtml(state.timeline.title)+'</title>');
+ out.push('<desc>Frise chronologique éditable de '+escapeHtml(fmtYear(lo))+' à '+escapeHtml(fmtYear(hi))+'.</desc>');
+ out.push('<defs><linearGradient id="bgFade" x1="0" x2="1"><stop offset="0" stop-color="#fcfbf8"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#202d43" flood-opacity=".06"/></filter></defs>');
+ out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="16" fill="url(#bgFade)"/>');
+ out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
+ out.push(text(1330,34,"FRISE PERSONNALISÉE",'text-anchor="end" font-size="10" font-weight="750" fill="#818998" letter-spacing="1.3"'));
+ // Heading arrow above the band recalls the historical axis without pretending to be a date.
+ out.push('<path d="M'+scale.x0+' 70 H'+(scale.x1-12)+'" stroke="#ef4036" stroke-width="2.4" fill="none"/>');
+ out.push('<path d="M'+scale.x0+' 70 l12 -7 v14 z" fill="#ef4036"/><path d="M'+scale.x1+' 70 l-12 -7 v14 z" fill="#ef4036"/>');
+ out.push(text((scale.x0+scale.x1)/2,61,"HISTOIRE",'text-anchor="middle" font-size="16" font-weight="850" fill="#ef4036"'));
+ // Event labels get separate lanes when points are close to each other.
+ const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
+ const prior=[];
+ events.forEach(function(e,index){
+  const x=scale.map(e.date),isBottom=e.position==="bottom";
+  let lane=0;
+  if(!isBottom){
+   for(let l=0;l<4;l++){
+    const blocked=prior.some(function(q){return q.position!=="bottom"&&q.lane===l&&Math.abs(q.x-x)<Math.max(112,Math.min(210,(q.title.length+e.title.length)*3.7))});
+    if(!blocked){lane=l;break}
+   }
+  }else{
+   for(let l=0;l<3;l++){
+    const blocked=prior.some(function(q){return q.position==="bottom"&&q.lane===l&&Math.abs(q.x-x)<Math.max(112,Math.min(210,(q.title.length+e.title.length)*3.7))});
+    if(!blocked){lane=l;break}
+   }
+  }
+  const q={x:x,lane:lane,position:e.position,title:e.title};prior.push(q);
+  const boxW=Math.max(106,Math.min(182,e.title.length*6.4+20));
+  const bx=Math.min(W-boxW-22,Math.max(22,x-boxW/2));
+  if(!isBottom){
+   const labelY=42+lane*35;
+   out.push(line(x,top,bx+boxW/2,labelY+22,'stroke="#8993a3" stroke-width="1.1"'));
+   out.push('<circle cx="'+x+'" cy="'+top+'" r="3.3" fill="#ef4036" stroke="#fff" stroke-width="1.5"/>');
+   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="25" rx="6" fill="#fff" stroke="#e5e4de"/>');
+   out.push(text(bx+boxW/2,labelY+16,e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
+   out.push(text(bx+boxW/2,labelY+35,fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
+  }else{
+   const labelY=314+lane*31;
+   out.push(line(x,top+bh,bx+boxW/2,labelY,'stroke="#8993a3" stroke-width="1.1"'));
+   out.push('<circle cx="'+x+'" cy="'+(top+bh)+'" r="3.3" fill="#ef4036" stroke="#fff" stroke-width="1.5"/>');
+   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="24" rx="6" fill="#fff" stroke="#e5e4de"/>');
+   out.push(text(bx+boxW/2,labelY+15,e.title,'text-anchor="middle" font-size="10" font-weight="750" fill="#344158"'));
+   out.push(text(bx+boxW/2,labelY+35,fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
+  }
+ });
+ // Band and colored periods.
+ out.push('<rect x="'+scale.x0+'" y="'+top+'" width="'+(scale.x1-scale.x0)+'" height="'+bh+'" rx="7" fill="#f0eee7" filter="url(#softShadow)"/>');
+ state.periods.slice().sort(function(a,b){return Number(a.start)-Number(b.start)}).forEach(function(p){
+  const x1=Math.max(scale.x0,scale.map(p.start)),x2=Math.min(scale.x1,scale.map(p.end));
+  if(x2<=x1)return;
+  out.push(pathPeriod(p,scale,top,bh));
+  const px=(x1+x2)/2,available=x2-x1;
+  if(available>72){
+   const name=p.name.toUpperCase();
+   const lines=[];
+   if(available<132&&name.length>12){const words=name.split(/\s+/);let first="",second="";words.forEach(function(w){if((first+" "+w).trim().length<=11)first=(first+" "+w).trim();else second=(second+" "+w).trim()});lines.push(first);if(second)lines.push(second)}
+   else if(available<210&&name.length>19){const words=name.split(/\s+/);let first="",second="";words.forEach(function(w){if((first+" "+w).trim().length<=18)first=(first+" "+w).trim();else second=(second+" "+w).trim()});lines.push(first);if(second)lines.push(second)}
+   else lines.push(name);
+   const fs=available<100?9:available<160?10:13;
+   if(lines.length===1)out.push(text(px,top+bh/2+4,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" letter-spacing=".1"'));
+   else{out.push(text(px,top+bh/2-2,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'));out.push(text(px,top+bh/2+13,lines[1],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'))}
+  }
+ });
+ out.push(line(scale.x0,top+bh+1,scale.x1,top+bh+1,'stroke="#fff" stroke-width="1.2"'));
+ // Birth of Jesus transition: separator between 1 BCE and 1 CE, not a year zero date.
+ if(lo<=-1&&hi>=1){
+  const bx=(scale.map(-1)+scale.map(1))/2;
+  out.push(line(bx,88,bx,top+bh+10,'stroke="#ef4036" stroke-width="2.1"'));
+  out.push('<rect x="'+(bx-74)+'" y="88" width="148" height="38" rx="7" fill="#fff5f3" stroke="#ffd0ca"/>');
+  out.push(text(bx,103,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="10" font-weight="900" fill="#ef4036"'));
+  out.push(text(bx,116,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="8.5" fill="#a65a55"'));
+ }
+ // Key date labels at period boundaries, spread apart when necessary.
+ const candidates=[{y:lo,label:fmtYear(lo,true),priority:10},{y:hi,label:fmtYear(hi,true),priority:10}];
+ state.periods.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:5});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:5})});
+ if(lo<=-1&&hi>=1){candidates.push({y:-1,label:"1 av. J.-C.",priority:8},{y:1,label:"1 ap. J.-C.",priority:8})}
+ const seen=new Set(),ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
+ const placed=[];
+ ticks.forEach(function(t){
+  const x=scale.map(t.y);
+  if(placed.some(function(q){return Math.abs(q.x-x)<66&&t.priority<q.priority}))return;
+  const priorTick=placed.find(function(q){return Math.abs(q.x-x)<66});
+  if(priorTick&&priorTick.priority<t.priority){const idx=placed.indexOf(priorTick);placed.splice(idx,1)}
+  placed.push({x:x,priority:t.priority});
+  out.push(line(x,top+bh,x,top+bh+9,'stroke="#7b8494" stroke-width="1"'));
+  const anchor=x<100?"start":x>1300?"end":"middle";
+  const tx=x<100?x+1:x>1300?x-1:x;
+  out.push(text(tx,top+bh+25,t.label,'text-anchor="'+anchor+'" font-size="10" font-weight="650" fill="#606b7e"'));
+ });
+ // Dotted or wavy cues are drawn explicitly so breaks remain visible in the exported SVG.
+ state.compressions.forEach(function(c){
+  if(Number(c.end)<lo||Number(c.start)>hi)return;
+  const x1=scale.map(c.start),x2=scale.map(c.end);
+  if(c.style==="wave"){
+   [x1,x2].forEach(function(x){let d="";for(let k=0;k<=10;k++){const y=top+k*bh/10,xx=x+Math.sin(k*Math.PI*1.7)*4;d+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="#fff" stroke-width="2.2" opacity=".75"/>')})
+  }else{
+   [x1,x2].forEach(function(x){out.push(line(x,top,x,top+bh,'stroke="#fff" stroke-width="3" stroke-dasharray="3 5"'))})
+  }
+  if(x2-x1>85){
+   const mid=(x1+x2)/2;
+   out.push(text(mid,top+bh+54,c.style==="wave"?"≈ durée condensée":"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
+  }
+ });
+ out.push(text(68,391,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
+ out.push(text(1330,391,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
+ svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML=out.join("");
+ svg.setAttribute("aria-label",state.timeline.title+" : de "+fmtYear(lo,true)+" à "+fmtYear(hi,true))
+}
+function selectItem(type,id){selected={type:type,id:id};renderLists();renderEditor();document.getElementById("editorPanel").scrollIntoView({behavior:"smooth",block:"nearest"})}
+function addItem(type){
+ if(type==="period"){
+  const item={id:uid(),name:"Nouvelle période",start:-3500,end:476,color:COLORS[(state.periods.length)%COLORS.length].value};
+  state.periods.push(item);selected={type:"period",id:item.id}
+ }else if(type==="event"){
+  const item={id:uid(),title:"Nouvel événement",date:800,description:"",position:"top"};state.events.push(item);selected={type:"event",id:item.id}
+ }else{
+  const item={id:uid(),start:-100000,end:-10000,style:"wave"};state.compressions.push(item);selected={type:"break",id:item.id}
+ }
+ renderLists();renderEditor();renderSvg();saveState();document.getElementById("editorPanel").scrollIntoView({behavior:"smooth",block:"nearest"});toast("Élément ajouté. Modifie ses propriétés puis enregistre.")
+}
+function deleteSelected(){
+ const item=currentItem();if(!item)return;
+ const arr=selected.type==="period"?state.periods:selected.type==="event"?state.events:state.compressions;
+ const idx=arr.findIndex(function(x){return x.id===selected.id});if(idx>=0)arr.splice(idx,1);
+ selected={type:"period",id:state.periods[0]?.id||""};
+ refresh();toast("Élément supprimé.")
+}
+function saveItemForm(ev){
+ ev.preventDefault();const f=ev.currentTarget,type=f.dataset.type,id=f.dataset.id;
+ const arr=type==="period"?state.periods:type==="event"?state.events:state.compressions;
+ const item=arr.find(function(x){return x.id===id});if(!item)return;
+ const value=function(id){return document.getElementById(id)?.value};
+ if(type==="period"){
+  const name=value("itemName").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
+  if(!name){toast("Ajoute un nom à cette période.",true);return}
+  if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : il faut deux années différentes, sans année 0, et un début avant la fin.",true);return}
+  item.name=name;item.start=start;item.end=end;
+  const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
+ }else if(type==="event"){
+  const name=value("itemName").trim(),date=Number(value("itemDate"));
+  if(!name||!validYear(date)){toast("Nom ou date invalide. L'année 0 ne peut pas être saisie.",true);return}
+  item.title=name;item.date=date;item.description=value("itemDescription")||"";item.position=value("itemPosition")||"top";
+ }else{
+  const start=Number(value("itemStart")),end=Number(value("itemEnd"));
+  if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : le début doit précéder la fin et l'année 0 n'est pas admise.",true);return}
+  item.start=start;item.end=end;item.style=value("itemStyle")||"wave";
+ }
+ renderLists();renderEditor();renderSvg();saveState();toast("Modifications enregistrées.")
+}
+function updateTimeline(ev){
+ ev.preventDefault();
+ const title=document.getElementById("timelineTitle").value.trim(),start=Number(document.getElementById("timelineStart").value),end=Number(document.getElementById("timelineEnd").value);
+ if(!title){toast("Donne un titre à la frise.",true);return}
+ if(!validYear(start)||!validYear(end)||start>=end){toast("Plage de dates invalide : choisis deux années sans année 0, avec un début avant la fin.",true);return}
+ state.timeline={title:title,start:start,end:end};refresh();toast("Frise mise à jour.")
+}
+function projectFilename(ext){return (state.timeline.title||"frise-chronologique").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"frise-chronologique")+"."+ext}
+function downloadBlob(blob,name){
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1200)
+}
+function exportJson(){
+ const data=JSON.stringify(state,null,2);downloadBlob(new Blob([data],{type:"application/json;charset=utf-8"}),projectFilename("json"));toast("Projet JSON exporté.")
+}
+function readSvg(){
+ const original=document.getElementById("timelineSvg"),clone=original.cloneNode(true);
+ clone.setAttribute("xmlns","http://www.w3.org/2000/svg");clone.setAttribute("width","1400");clone.setAttribute("height","420");
+ const style=document.createElementNS("http://www.w3.org/2000/svg","style");style.textContent='text{font-family:Inter,Arial,sans-serif}';clone.insertBefore(style,clone.firstChild);
+ return new XMLSerializer().serializeToString(clone)
+}
+function exportSvg(){const raw=readSvg();downloadBlob(new Blob([raw],{type:"image/svg+xml;charset=utf-8"}),projectFilename("svg"));toast("Frise SVG exportée.")}
+function exportPng(){
+ const raw=readSvg(),blob=new Blob([raw],{type:"image/svg+xml;charset=utf-8"}),url=URL.createObjectURL(blob),img=new Image();
+ img.onload=function(){
+  try{
+   const canvas=document.createElement("canvas");canvas.width=2800;canvas.height=840;
+   const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+   canvas.toBlob(function(png){URL.revokeObjectURL(url);if(png){downloadBlob(png,projectFilename("png"));toast("Frise PNG haute résolution exportée.")}else toast("Impossible de générer le PNG.",true)},"image/png")
+  }catch(e){URL.revokeObjectURL(url);toast("L'export PNG a échoué. Essaie l'export SVG.",true)}
+ };
+ img.onerror=function(){URL.revokeObjectURL(url);toast("Impossible de convertir la frise en PNG.",true)};
+ img.src=url
+}
+function validateImport(v){
+ if(!v||!v.timeline||!Array.isArray(v.periods)||!Array.isArray(v.events)||!Array.isArray(v.compressions))throw new Error("Le fichier ne correspond pas à un projet Frise Studio.");
+ const s=Number(v.timeline.start),e=Number(v.timeline.end);
+ if(!validYear(s)||!validYear(e)||s>=e)throw new Error("Les dates de la frise sont invalides.");
+ v.periods.forEach(function(p){if(!p.name||!validYear(Number(p.start))||!validYear(Number(p.end))||Number(p.start)>=Number(p.end))throw new Error("Une période comporte des dates invalides.")});
+ v.events.forEach(function(x){if(!x.title||!validYear(Number(x.date)))throw new Error("Un événement comporte une date invalide.")});
+ v.compressions.forEach(function(x){if(!validYear(Number(x.start))||!validYear(Number(x.end))||Number(x.start)>=Number(x.end))throw new Error("Un temps condensé comporte des dates invalides.")});
+ return true
+}
+document.getElementById("timelineForm").addEventListener("submit",updateTimeline);
+document.getElementById("editorContent").addEventListener("submit",saveItemForm);
+document.getElementById("editorContent").addEventListener("click",function(e){
+ const color=e.target.closest("[data-color]");if(color){const form=document.getElementById("itemForm");if(form){form.querySelectorAll("[data-color]").forEach(function(b){b.classList.remove("active")});color.classList.add("active")}}
+ if(e.target.closest("#deleteSelectedBtn"))deleteSelected()
+});
+document.addEventListener("click",function(e){
+ const row=e.target.closest("[data-select-type]");if(row){selectItem(row.dataset.selectType,row.dataset.selectId);return}
+});
+document.getElementById("addPeriodBtn").addEventListener("click",function(){addItem("period")});
+document.getElementById("addEventBtn").addEventListener("click",function(){addItem("event")});
+document.getElementById("addBreakBtn").addEventListener("click",function(){addItem("break")});
+document.getElementById("birthBtn").addEventListener("click",function(){
+ if(state.timeline.start>-1||state.timeline.end<1){toast("Élargis la frise pour voir le passage entre 1 av. J.-C. et 1 ap. J.-C.",true);return}
+ const bx=(getScale().map(-1)+getScale().map(1))/2;toast("Repère « Naissance de Jésus » : il marque le passage de 1 av. J.-C. à 1 ap. J.-C., sans année 0.")
+});
+document.getElementById("resetBtn").addEventListener("click",function(){
+ if(!confirm("Remplacer la frise actuelle par les exemples initiaux ?"))return;
+ state=examples();selected={type:"period",id:"p-pre"};refresh();toast("Exemples initiaux restaurés.")
+});
+document.getElementById("jsonBtn").addEventListener("click",exportJson);
+document.getElementById("svgBtn").addEventListener("click",exportSvg);
+document.getElementById("svgBtn2").addEventListener("click",exportSvg);
+document.getElementById("pngBtn").addEventListener("click",exportPng);
+document.getElementById("pngBtn2").addEventListener("click",exportPng);
+document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click()});
+document.getElementById("importFile").addEventListener("change",function(e){
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ const reader=new FileReader();
+ reader.onload=function(){try{const next=JSON.parse(String(reader.result));validateImport(next);state=next;selected={type:"period",id:state.periods[0]?.id||""};refresh();toast("Projet importé avec succès.")}catch(err){toast(err.message||"Import impossible.",true)}e.target.value=""};
+ reader.onerror=function(){toast("Lecture du fichier impossible.",true);e.target.value=""};reader.readAsText(file)
+});
+// Keep the title/start/end inputs visually synchronized when a project is loaded.
+refresh();
+})();
+</script>
+</body>
+</html>
