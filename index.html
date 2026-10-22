@@ -402,9 +402,13 @@ function renderSvg(){
    // Les bords latéraux restent ondulés.
    [x1,x2].forEach(function(x,side){let edge="";for(let k=0;k<=20;k++){const y=top+bh*k/20,xx=x+Math.sin(k/20*Math.PI*4)*4;edge+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+edge+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
   }else{
-   // En pointillé, seuls les deux côtés verticaux du rectangle sont pointillés.
+   // Le fond reste légèrement teinté et les quatre côtés du rectangle sont pointillés.
    out.push('<rect x="'+x1.toFixed(2)+'" y="'+top+'" width="'+Math.max(1,x2-x1).toFixed(2)+'" height="'+bh+'" fill="'+escapeHtml(cue)+'" fill-opacity=".10" stroke="none" pointer-events="none"/>');
-   [x1,x2].forEach(function(x){out.push(line(x,top,x,top+bh,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))});
+   const dash='stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5" fill="none"';
+   out.push(line(x1,top,x2,top,dash));
+   out.push(line(x1,top+bh,x2,top+bh,dash));
+   out.push(line(x1,top,x1,top+bh,dash));
+   out.push(line(x2,top,x2,top+bh,dash));
   }
   if(x2-x1>85){
    const mid=(x1+x2)/2;
