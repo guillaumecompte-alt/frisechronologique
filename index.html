@@ -39,6 +39,7 @@
         <div class="two-col">
           <div class="field"><label for="timelineStart">Date de début</label><input id="timelineStart" name="start" type="number" step="1" value="-2500000" required></div>
           <div class="field"><label for="timelineEnd">Date de fin</label><input id="timelineEnd" name="end" type="number" step="1" value="2026" required></div>
+          <div class="field"><label for="dateFormat">Format d’affichage des dates</label><select id="dateFormat" name="dateFormat"><option value="jc">Avec J.-C. (400 av. J.-C. ; 560 ap. J.-C.)</option><option value="relative">Nombres relatifs (-400 ; 560)</option></select></div>
         </div>
         <div class="field-help">Avant notre ère : année négative (−3500). Après notre ère : année positive (476). L'année 0 n'est pas utilisée comme date.</div>
         <div class="editor-actions"><button class="btn primary" type="submit">Mettre à jour</button><button class="btn" type="button" id="resetBtn">Réinitialiser</button></div>
@@ -120,6 +121,7 @@ function histOrd(y){y=Number(y);return y<0?y+1:y}
 function yearDate(y){return validYear(y)?Number(y):null}
 function fmtYear(y,short){
  y=Number(y);
+ if(state&&state.timeline&&state.timeline.dateFormat==="relative")return String(y);
  if(y===0)return "Naissance de Jésus";
  if(Math.abs(y)>=1000000)return (Math.abs(y)/1000000).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Ma";
  if(Math.abs(y)>=100000)return (Math.abs(y)/1000).toLocaleString("fr-FR",{maximumFractionDigits:0})+" ka";
@@ -205,7 +207,7 @@ function renderEditor(){
  html+='<div class="editor-actions"><button class="btn primary" type="submit">Enregistrer</button><button class="btn danger" type="button" id="deleteSelectedBtn">Supprimer</button></div></form>';
  root.innerHTML=html;
 }
-function refresh(){document.getElementById("pageTitle").textContent=state.timeline.title;document.getElementById("timelineTitle").value=state.timeline.title;document.getElementById("timelineStart").value=state.timeline.start;document.getElementById("timelineEnd").value=state.timeline.end;renderLists();renderEditor();renderSvg();saveState()}
+function refresh(){document.getElementById("pageTitle").textContent=state.timeline.title;document.getElementById("timelineTitle").value=state.timeline.title;document.getElementById("timelineStart").value=state.timeline.start;document.getElementById("timelineEnd").value=state.timeline.end;document.getElementById("dateFormat").value=state.timeline.dateFormat||"jc";renderLists();renderEditor();renderSvg();saveState()}
 function colorForYear(y,scale){return scale.map(y)}
 function getScale(){
  const lo=Number(state.timeline.start),hi=Number(state.timeline.end);
@@ -488,7 +490,7 @@ function updateTimeline(ev){
  const title=document.getElementById("timelineTitle").value.trim(),start=Number(document.getElementById("timelineStart").value),end=Number(document.getElementById("timelineEnd").value);
  if(!title){toast("Donne un titre à la frise.",true);return}
  if(!validYear(start)||!validYear(end)||start>=end){toast("Plage de dates invalide : choisis deux années sans année 0, avec un début avant la fin.",true);return}
- state.timeline={title:title,start:start,end:end};refresh();toast("Frise mise à jour.")
+ state.timeline={...state.timeline,title:title,start:start,end:end,dateFormat:document.getElementById("dateFormat").value||"jc"};refresh();toast("Frise mise à jour.")
 }
 function projectFilename(ext){return ((state.timeline.title||"frise-chronologique").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"frise-chronologique")+"."+ext}
 function downloadBlob(blob,name){
