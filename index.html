@@ -188,7 +188,8 @@ function renderEditor(){
   html+='<div class="two-col">'+field("itemStart","Début (année)",item.start,"number",'required')+field("itemEnd","Fin (année)",item.end,"number",'required')+'</div>';
   html+='<div class="field"><label>Couleur de la période</label>'+paletteHtml(item.color)+'</div>';
   html+='<div class="field"><label for="itemFillStyle">Remplissage de la période</label><select id="itemFillStyle" name="itemFillStyle"><option value="solid" '+(item.fillStyle!=="hatched"?"selected":"")+'>Couleur pleine</option><option value="hatched" '+(item.fillStyle==="hatched"?"selected":"")+'>Couleur hachurée</option></select></div>';
-  html+='<div class="two-col"><div class="field"><label for="itemHatchColor">Couleur des hachures</label><input id="itemHatchColor" name="itemHatchColor" type="color" value="'+escapeHtml(item.hatchColor||item.color||"#66758b")+'"></div><div class="field"><label for="itemHatchBackground">Couleur du fond</label><input id="itemHatchBackground" name="itemHatchBackground" type="color" value="'+escapeHtml(item.hatchBackground||"#f4f1eb")+'"></div></div>';
+  html+='<div class="field"><label>Couleur des hachures</label>'+paletteHtml(item.hatchColor||item.color||COLORS[0].value).replace(/data-color=/g,'data-hatch-color=')+'</div>';
+  html+='<div class="field"><label>Couleur du fond</label>'+paletteHtml(item.hatchBackground||"#d5d8dc").replace(/data-color=/g,'data-hatch-background=')+'</div>';
   html+='<p class="field-help">Les deux couleurs sont visibles sur la frise et se mettent à jour dès leur sélection.</p>';
   html+='<p class="field-help">Le nom apparaît à l\'intérieur de la bande colorée lorsque l\'espace le permet.</p>';
  }else if(selected.type==="event"){
@@ -534,8 +535,8 @@ document.getElementById("editorContent").addEventListener("input",function(ev){
  if(type==="period"){
   if(el.id==="itemName")item.name=el.value;
   if(el.id==="itemFillStyle")item.fillStyle=el.value;
-  if(el.id==="itemHatchColor")item.hatchColor=el.value;
-  if(el.id==="itemHatchBackground")item.hatchBackground=el.value;
+  if(el.matches("[data-hatch-color]"))item.hatchColor=el.dataset.hatchColor;
+  if(el.matches("[data-hatch-background]"))item.hatchBackground=el.dataset.hatchBackground;
   if(el.id==="itemStart"||el.id==="itemEnd"){
    const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
    if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
@@ -642,6 +643,16 @@ document.getElementById("editorContent").addEventListener("click",function(e){
  if(e.target.closest("#deleteSelectedBtn"))deleteSelected()
 });
 document.addEventListener("click",function(e){
+ const hatchColor=e.target.closest("[data-hatch-color]");
+ if(hatchColor){
+  const item=currentItem();if(item&&selected.type==="period"){item.hatchColor=hatchColor.dataset.hatchColor;renderEditor();renderSvg();saveState()}
+  return
+ }
+ const hatchBg=e.target.closest("[data-hatch-background]");
+ if(hatchBg){
+  const item=currentItem();if(item&&selected.type==="period"){item.hatchBackground=hatchBg.dataset.hatchBackground;renderEditor();renderSvg();saveState()}
+  return
+ }
  const row=e.target.closest("[data-select-type]");if(row){selectItem(row.dataset.selectType,row.dataset.selectId);return}
 });
 document.getElementById("addPeriodBtn").addEventListener("click",function(){addItem("period")});
