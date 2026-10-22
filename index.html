@@ -158,7 +158,7 @@ function renderLists(){
  const defs=[
   {type:"period",el:"periodList",items:state.periods,title:function(i){return i.name},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color}},
   {type:"event",el:"eventList",items:state.events,title:function(i){return i.title},sub:function(i){return fmtYear(i.date,true)},color:function(){return "#ef4036"}},
-  {type:"break",el:"breakList",items:state.compressions,title:function(i){return "Temps condensé"},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(){return "#66758b"}}
+  {type:"break",el:"breakList",items:state.compressions,title:function(i){return "Temps condensé"},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color||"#66758b"}}
  ];
  defs.forEach(function(d){
   const el=document.getElementById(d.el);
@@ -351,22 +351,25 @@ function renderSvg(){
    out.push(text(bx+boxW/2,labelY+35,fmtYear(e.date,true),'text-anchor="middle" font-size="9" fill="#7b8494"'));
   }
  });
- // Key date labels at period boundaries, spread apart when necessary.
+ // Dates : on conserve chaque repère et on répartit les étiquettes sur plusieurs lignes.
+ // Les traits de rappel sont plus longs pour relier clairement l'étiquette à sa date exacte.
  const candidates=[{y:lo,label:fmtYear(lo,true),priority:10},{y:hi,label:fmtYear(hi,true),priority:10}];
  state.periods.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:5});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:5})});
  if(lo<=-1&&hi>=1){candidates.push({y:-1,label:"1 av. J.-C.",priority:8},{y:1,label:"1 ap. J.-C.",priority:8})}
  const seen=new Set(),ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
- const placed=[];
+ const lanes=[];
  ticks.forEach(function(t){
-  const x=scale.map(t.y);
-  if(placed.some(function(q){return Math.abs(q.x-x)<66&&t.priority<q.priority}))return;
-  const priorTick=placed.find(function(q){return Math.abs(q.x-x)<66});
-  if(priorTick&&priorTick.priority<t.priority){const idx=placed.indexOf(priorTick);placed.splice(idx,1)}
-  placed.push({x:x,priority:t.priority});
-  out.push(line(x,top+bh,x,top+bh+9,'stroke="#7b8494" stroke-width="1"'));
-  const anchor=x<100?"start":x>1300?"end":"middle";
-  const tx=x<100?x+1:x>1300?x-1:x;
-  out.push(text(tx,top+bh+25,t.label,'text-anchor="'+anchor+'" font-size="10" font-weight="650" fill="#606b7e"'));
+  const x=scale.map(t.y),labelW=Math.max(48,t.label.length*5.8+10);
+  let lane=0;
+  while(lanes[lane]&&lanes[lane].some(function(q){return Math.abs(q.x-x)<(q.w+labelW)/2+7}))lane++;
+  if(!lanes[lane])lanes[lane]=[];
+  lanes[lane].push({x:x,w:labelW});
+  const y=top+bh+29+lane*23;
+  out.push(line(x,top+bh,x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'));
+  out.push(line(x,top+bh+15,x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
+  const anchor=x<labelW/2+8?"start":x>W-labelW/2-8?"end":"middle";
+  const tx=anchor==="start"?Math.max(8,x):anchor==="end"?Math.min(W-8,x):x;
+  out.push(text(tx,y,t.label,'text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70"'));
  });
  // Direct manipulation: draggable handles adjust the visual break boundaries.
  state.compressions.forEach(function(comp){
