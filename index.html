@@ -389,10 +389,14 @@ function renderSvg(){
  state.compressions.forEach(function(c){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
   const x1=scale.map(c.start),x2=scale.map(c.end);
+  const cue=c.color||"#66758b";
   if(c.style==="wave"){
-   [x1,x2].forEach(function(x){let d="";for(let k=0;k<=10;k++){const y=top+k*bh/10,xx=x+Math.sin(k*Math.PI*1.7)*4;d+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="#fff" stroke-width="2.2" opacity=".75"/>')})
+   // Ondulations horizontales sur toute la longueur, plus ondulations verticales aux extrémités.
+   [top+5,top+bh-5].forEach(function(y){let d="";for(let x=x1;x<=x2+0.1;x+=5){const yy=y+Math.sin((x-x1)/10*Math.PI)*2.6;d+=(x===x1?"M":" L")+x.toFixed(2)+" "+yy.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
+   [x1,x2].forEach(function(x){let d="";for(let k=0;k<=10;k++){const y=top+k*bh/10,xx=x+Math.sin(k*Math.PI*1.7)*4;d+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+d+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')})
   }else{
-   [x1,x2].forEach(function(x){out.push(line(x,top,x,top+bh,'stroke="#fff" stroke-width="3" stroke-dasharray="3 5"'))})
+   [top+4,top+bh-4].forEach(function(y){out.push(line(x1,y,x2,y,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))});
+   [x1,x2].forEach(function(x){out.push(line(x,top,x,top+bh,'stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5"'))})
   }
   if(x2-x1>85){
    const mid=(x1+x2)/2;
