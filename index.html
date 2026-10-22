@@ -305,11 +305,11 @@ function renderSvg(){
    else{out.push(text(px,top+bh/2-2,lines[0],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'));out.push(text(px,top+bh/2+13,lines[1],'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248"'))}
   }
  });
- // Extrémité en forme de flèche intégrée à la bande de la frise, comme sur le modèle fourni.
+ // Pointe en forme de flèche intégrée à la bande, assortie à la dernière période.
  const arrowTip=scale.x1, arrowBase=scale.x1-44, arrowMid=top+bh/2;
- out.push('<path d="M'+scale.x0+' '+top+' H'+arrowBase+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' H'+scale.x0+' Q'+(scale.x0-5)+' '+(top+bh)+' '+scale.x0+' '+(top+bh-8)+' Z" fill="#f0eee7" pointer-events="none"/>');
- // La pointe est dessinée au-dessus du fond, mais derrière les périodes colorées.
- out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="#f0eee7" pointer-events="none"/>');
+ const finalPeriod=state.periods.slice().sort(function(a,b){return Number(a.end)-Number(b.end)}).filter(function(p){return Number(p.end)<=hi&&Number(p.end)>=lo}).pop();
+ const arrowColor=finalPeriod&&finalPeriod.color?finalPeriod.color:"#ffcf3f";
+ out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="'+escapeHtml(arrowColor)+'" pointer-events="none"/>');
  // Birth of Jesus transition: separator between 1 BCE and 1 CE, not a year zero date.
  if(lo<=-1&&hi>=1){
   const bx=(scale.map(-1)+scale.map(1))/2;
