@@ -416,11 +416,9 @@ function renderSvg(){
  });
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
- // Pointe de flèche pleine intégrée à l'extrémité droite de la bande, au-dessus des autres tracés.
+ // Triangle gris pâle au bout de la frise : il prolonge la bande et forme sa pointe finale.
  const arrowTip=scale.x1, arrowBase=scale.x1-44, arrowMid=top+bh/2;
- const finalPeriod=state.periods.slice().sort(function(a,b){return Number(a.end)-Number(b.end)}).filter(function(p){return Number(p.end)<=hi&&Number(p.end)>=lo}).pop();
- const arrowColor=finalPeriod&&finalPeriod.color?finalPeriod.color:"#ffcf3f";
- out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="'+escapeHtml(arrowColor)+'" pointer-events="none"/>');
+ out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="#f0eee7" pointer-events="none"/>');
  svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML=out.join("");
  svg.setAttribute("aria-label",state.timeline.title+" : de "+fmtYear(lo,true)+" à "+fmtYear(hi,true))
 }
