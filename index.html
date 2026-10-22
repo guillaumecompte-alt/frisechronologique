@@ -221,12 +221,10 @@ function getScale(){
   const a=unique[i],b=unique[i+1],ordDelta=Math.max(.0001,histOrd(b)-histOrd(a));
   const mid=(a+b)/2;
   const comp=state.compressions.find(function(c){return Number(c.start)<=mid&&Number(c.end)>=mid});
-  // Keep durations comparable: an uncompressed span uses sqrt(duration) for readability.
-  // A compressed span uses a percentage of its natural width; its total width stays stable
-  // even when extra dates split it into several sub-intervals.
-  const compOrdDelta=comp?Math.max(.0001,histOrd(Number(comp.end))-histOrd(Number(comp.start))):1;
+  // Échelle proportionnelle : hors rupture, la largeur est directement liée au nombre d'années.
+  // Une rupture réduit uniquement la largeur de son intervalle selon le réglage utilisateur.
   const compScale=comp?Math.max(1,Math.min(100,Number(comp.weight)||28))/100:1;
-  const weight=comp?Math.sqrt(compOrdDelta)*compScale*ordDelta/compOrdDelta:Math.sqrt(ordDelta);
+  const weight=ordDelta*compScale;
   intervals.push({a:a,b:b,oa:histOrd(a),ob:histOrd(b),weight:weight,comp:comp});total+=weight
  }
  const X0=65,X1=1335,span=X1-X0;
