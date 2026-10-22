@@ -416,9 +416,10 @@ function renderSvg(){
  });
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
- // Triangle gris pâle au bout de la frise : il prolonge la bande et forme sa pointe finale.
- const arrowTip=scale.x1, arrowBase=scale.x1-44, arrowMid=top+bh/2;
- out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="#f0eee7" pointer-events="none"/>');
+ // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
+ // La base du triangle rejoint exactement le bord droit de la frise.
+ const arrowTip=scale.x1+44, arrowBase=scale.x1, arrowMid=top+bh/2;
+ out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="#f0eee7" stroke="#f0eee7" stroke-width="1" stroke-linejoin="round" pointer-events="none"/>');
  svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML=out.join("");
  svg.setAttribute("aria-label",state.timeline.title+" : de "+fmtYear(lo,true)+" à "+fmtYear(hi,true))
 }
