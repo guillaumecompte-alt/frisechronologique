@@ -598,14 +598,21 @@ function inverseScale(x){
  return Math.max(Number(state.timeline.start),Math.min(Number(state.timeline.end),year))
 }
 timelineSvg.addEventListener("pointerdown",function(e){
- const eventDot=e.target.closest("[data-event-dot]");
- if(eventDot){activeDrag={kind:"event",id:eventDot.dataset.eventDot};timelineSvg.setPointerCapture(e.pointerId);e.preventDefault()}
+ // Les événements sont fixes sur la frise : leur date se modifie uniquement dans le formulaire.
 });
 const dragPreview=document.createElementNS("http://www.w3.org/2000/svg","g");
 dragPreview.setAttribute("id","dragYearPreview");
 dragPreview.innerHTML='<rect x="-70" y="-24" width="140" height="34" rx="7" fill="#18263d" opacity=".96"/><text x="0" y="-3" text-anchor="middle" font-size="12" font-weight="800" fill="#fff"></text>';
 timelineSvg.appendChild(dragPreview);
 timelineSvg.addEventListener("pointermove",function(e){
+ const target=e.target;
+ const pt=svgPoint(e);
+ let pointer=!!(target.closest("[data-event-label]")||target.closest("[data-event-dot]")||target.closest("[data-period-handle]"));
+ if(!pointer&&pt&&pt.y>=178&&pt.y<=258){
+  const yr=inverseScale(pt.x);
+  pointer=state.periods.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr})||state.compressions.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr});
+ }
+ timelineSvg.style.cursor=pointer?"pointer":"default";
  if(!activeDrag)return;
  const pt=svgPoint(e);if(!pt)return;
  const yr=inverseScale(pt.x),label=dragPreview.querySelector("text");
