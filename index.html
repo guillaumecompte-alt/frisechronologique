@@ -350,6 +350,7 @@ function renderSvg(){
    if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
    out.push(text(bx+boxW/2,labelY+(e.image?83:16),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
    out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
+   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="transparent" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer;pointer-events:all"/>');
   }else{
    const labelY=314+lane*31;
    out.push(line(x,top+bh,bx+boxW/2,labelY,'stroke="#8993a3" stroke-width="1.1"'));
@@ -359,6 +360,7 @@ function renderSvg(){
    if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
    out.push(text(bx+boxW/2,labelY+(e.image?83:15),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
    out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
+   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="transparent" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer;pointer-events:all"/>');
   }
  });
  // Dates : on conserve chaque repère et on répartit les étiquettes sur plusieurs lignes.
