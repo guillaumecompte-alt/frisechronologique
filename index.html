@@ -217,7 +217,7 @@ function getScale(){
  state.compressions.forEach(function(c){add(c.start);add(c.end)});
 
  const unique=Array.from(new Set(vals)).sort(function(a,b){return histOrd(a)-histOrd(b)});
- if(unique.length<2)return {map:function(){return 65},x0:65,x1:1335};
+ if(unique.length<2)return {map:function(){return 65},x0:65,x1:1379};
  const intervals=[];let total=0;
  for(let i=0;i<unique.length-1;i++){
   const a=unique[i],b=unique[i+1],ordDelta=Math.max(.0001,histOrd(b)-histOrd(a));
@@ -229,7 +229,7 @@ function getScale(){
   const weight=ordDelta*compScale;
   intervals.push({a:a,b:b,oa:histOrd(a),ob:histOrd(b),weight:weight,comp:comp});total+=weight
  }
- const X0=65,X1=1335,span=X1-X0;
+ const X0=65,X1=1379,span=X1-X0;
  let cursor=X0;
  intervals.forEach(function(s){s.x0=cursor;s.x1=cursor+span*s.weight/total;cursor=s.x1});
  function map(y){
@@ -434,7 +434,7 @@ function renderSvg(){
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
  // La base du triangle rejoint exactement le bord droit de la frise.
- const arrowTip=scale.x1+44, arrowBase=scale.x1, arrowMid=top+bh/2;
+ const arrowTip=scale.x1, arrowBase=scale.x1-44, arrowMid=top+bh/2;
   const endPeriod=state.periods.find(function(p){return Number(p.start)<=hi&&Number(p.end)>=hi;});
   const arrowColor=endPeriod?(endPeriod.color||"#f0eee7"):"#f0eee7";
   out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="'+escapeHtml(arrowColor)+'" stroke="'+escapeHtml(arrowColor)+'" stroke-width="1" stroke-linejoin="round" pointer-events="none"/>');
