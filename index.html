@@ -305,20 +305,19 @@ function renderSvg(){
   const finalPeriod=Number(p.end)>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;const available=x2-x1;const px=finalPeriod?x1+available*0.46:x1+available/2;
   if(available>10){
    const name=String(p.name||"").toUpperCase();
-   const sideMargin= Math.min(8,Math.max(3,available*0.12));
+   const sideMargin=Math.min(8,Math.max(3,available*0.12));
    const usableWidth=Math.max(1,available-sideMargin*2-(finalPeriod?3:0));
-   const maxChars=Math.max(1,Math.floor(usableWidth/6.6));
+   const words=String(name).split(/\s+/);
    const lines=[];let lineText="";
-   String(name).split(/\s+/).forEach(function(word){
-    let parts=[];
-    while(word.length>maxChars){parts.push(word.slice(0,maxChars));word=word.slice(maxChars)}
-    if(word)parts.push(word);
-    parts.forEach(function(part){if(!lineText)lineText=part;else if((lineText+" "+part).length<=maxChars)lineText+=" "+part;else{lines.push(lineText);lineText=part}});
+   words.forEach(function(word){
+    if(!lineText)lineText=word;
+    else if((lineText+" "+word).length<=Math.max(1,Math.floor(usableWidth/3.2)))lineText+=" "+word;
+    else{lines.push(lineText);lineText=word;}
    });
    if(lineText)lines.push(lineText);
    const longest=Math.max.apply(null,lines.map(function(l){return l.length}))||1;
-   const fs=Math.max(3.2,Math.min(11,usableWidth/(longest*0.68)));
-   const shown=lines.length>5?lines.slice(0,4).concat(["…"]):lines;
+   const fs=Math.max(2.2,Math.min(11,usableWidth/(longest*0.68)));
+   const shown=lines.length>6?lines.slice(0,5).concat(["…"]):lines;
    const lineHeight=Math.min(13,fs+2);
    const startY=top+bh/2-((shown.length-1)*lineHeight)/2+fs*.35;
    shown.forEach(function(lineText,i){out.push(text(px,startY+i*lineHeight,lineText,'text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="850" fill="#243248" letter-spacing="0"'));});
