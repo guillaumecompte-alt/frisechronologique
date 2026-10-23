@@ -259,12 +259,14 @@ function pathPeriod(p,scale,top,height){
  }
  const leftKind=waveL?"wave":dottedL?"dotted":null,rightKind=waveR?"wave":dottedR?"dotted":null;
  let d="M"+x1+" "+top+" ";
- if(leftKind==="wave"){for(let j=0;j<=10;j++){d+=(j===0?"":" L")+(x1+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
+ const isFinalPeriod=b>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;
+ if(isFinalPeriod){d+="L"+(x2-44)+" "+top+" L"+x2+" "+(top+height/2)+" L"+(x2-44)+" "+(top+height)+" L"+x1+" "+(top+height)+" Z";}
+ else if(leftKind==="wave"){for(let j=0;j<=10;j++){d+=(j===0?"":" L")+(x1+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
  else d+="L"+x1+" "+(top+height)+" ";
- d+="L"+x2+" "+(top+height)+" ";
+ if(!isFinalPeriod){d+="L"+x2+" "+(top+height)+" ";
  if(rightKind==="wave"){for(let j=10;j>=0;j--){d+="L"+(x2+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
  else d+="L"+x2+" "+top+" ";
- d+="Z";
+ d+="Z";}
  const hatchSelected=["hatched","hachuree","hatched-color"].includes(String(p.fillStyle||"").toLowerCase());
  const fill=hatchSelected?'url(#periodHatch_'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,"")+')':escapeHtml(p.color);
  return '<path d="'+d+'" fill="'+fill+'" stroke="'+escapeHtml(p.color)+'" stroke-width="1"/>'+
@@ -300,7 +302,7 @@ function renderSvg(){
   if(x2<=x1)return;
   out.push(pathPeriod(p,scale,top,bh));
   // Les périodes ne sont plus redimensionnables directement sur la frise.
-  const px=(x1+x2)/2,available=x2-x1;
+  const finalPeriod=Number(p.end)>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;const available=x2-x1-(finalPeriod?44:0);const px=x1+available/2;
   if(available>72){
    const name=p.name.toUpperCase();
    const lines=[];
@@ -435,9 +437,8 @@ function renderSvg(){
  // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
  // La base du triangle rejoint exactement le bord droit de la frise.
  const arrowTip=scale.x1, arrowBase=scale.x1-44, arrowMid=top+bh/2;
-  const endPeriod=state.periods.find(function(p){return Number(p.start)<=hi&&Number(p.end)>=hi;});
-  const arrowColor=endPeriod?(endPeriod.color||"#f0eee7"):"#f0eee7";
-  out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="'+escapeHtml(arrowColor)+'" stroke="'+escapeHtml(arrowColor)+'" stroke-width="1" stroke-linejoin="round" pointer-events="none"/>');
+  const endPeriod=state.periods.find(function(p){return Number(p.start)<hi&&Number(p.end)>=hi;});
+  if(!endPeriod){out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="#f0eee7" stroke="#f0eee7" stroke-width="1" stroke-linejoin="round" pointer-events="none"/>');}
  svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML=out.join("");
  svg.setAttribute("aria-label",state.timeline.title+" : de "+fmtYear(lo,true)+" à "+fmtYear(hi,true))
 }
