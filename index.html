@@ -341,7 +341,7 @@ function renderSvg(){
    }
   }
   const q={x:x,lane:lane,position:e.position,title:e.title};prior.push(q);
-  const boxW=Math.max(106,Math.min(182,e.title.length*6.4+20));
+  const titleWidth=Array.from(String(e.title||"")).reduce(function(n,ch){return n+("MW@#%".includes(ch)?9:("il.,' ".includes(ch)?3.8:6.6));},0);const boxW=Math.max(106,Math.min(320,titleWidth+28));
   const bx=Math.min(W-boxW-22,Math.max(22,x-boxW/2));
   if(!isBottom){
    const labelY=42+lane*35;
@@ -369,6 +369,7 @@ function renderSvg(){
  // Les traits de rappel sont plus longs pour relier clairement l'étiquette à sa date exacte.
  const candidates=[{y:lo,label:fmtYear(lo,true),priority:10},{y:hi,label:fmtYear(hi,true),priority:10}];
  state.periods.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:5});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:5})});
+ state.compressions.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:7});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:7})});
 
  const seen=new Set(),ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
  const lanes=[];
