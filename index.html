@@ -302,7 +302,7 @@ function renderSvg(){
   if(x2<=x1)return;
   out.push(pathPeriod(p,scale,top,bh));
   // Les périodes ne sont plus redimensionnables directement sur la frise.
-  const finalPeriod=Number(p.end)>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;const available=x2-x1-(finalPeriod?44:0);const px=x1+available/2;
+  const finalPeriod=Number(p.end)>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;const available=x2-x1;const px=finalPeriod?x1+available*0.46:x1+available/2;
   if(available>22){
    const name=String(p.name||"").toUpperCase();
    const maxChars=Math.max(3,Math.floor((available-6)/5.8));
