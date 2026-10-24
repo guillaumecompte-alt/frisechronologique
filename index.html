@@ -440,6 +440,12 @@ function renderSvg(){
   });
  // Repère rouge dessiné au premier plan afin qu’il traverse aussi les zones condensées et colorées.
  if(lo<=-1&&hi>=1){const birthX=(scale.map(-1)+scale.map(1))/2;out.push(line(birthX,top,birthX,top+bh+10,'stroke="#ef4036" stroke-width="2.1" pointer-events="none"'));}
+ // Redessiner les pastilles des événements au tout premier plan : les bordures des temps condensés ne doivent jamais les recouvrir.
+ state.events.forEach(function(e){
+  const year=Number(e.date);if(!Number.isFinite(year)||year<lo||year>hi)return;
+  const x=scale.map(year),y=e.position==="bottom"?top+bh:top;
+  out.push('<circle cx="'+x+'" cy="'+y+'" r="5.4" fill="#ef4036" stroke="#fff" stroke-width="1.7" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
+ });
  out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
  // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
