@@ -12,6 +12,72 @@
 @media(max-width:1100px){.layout{grid-template-columns:285px minmax(0,1fr);padding:16px;gap:15px}.app-header{padding:0 18px}.header-actions .optional{display:none}.intro h1{font-size:23px}}
 @media(max-width:800px){.app-header{height:auto;min-height:72px;padding:12px 15px;align-items:flex-start}.brand{min-width:unset}.brand small{display:none}.header-actions{gap:6px}.header-actions .save-status{display:none}.header-actions .btn{padding:8px;font-size:11px}.layout{grid-template-columns:1fr;padding:12px}.content{order:0}.sidebar{order:1;display:grid;grid-template-columns:1fr 1fr;align-items:start}.sidebar .settings-panel{grid-column:1/-1}.sidebar .editor-panel{grid-column:1/-1}.intro{align-items:flex-start}.intro h1{font-size:22px}.intro .pill{display:none}.preview-toolbar{padding:14px}.preview-foot{align-items:flex-start;flex-direction:column}.stats{flex-wrap:wrap}.list-stack{max-height:200px}}
 @media(max-width:480px){.logo{width:34px;height:34px}.brand strong{font-size:14px}.app-header{gap:8px}.header-actions .mobile-hide{display:none}.layout{padding:9px}.sidebar{display:flex}.intro h1{font-size:20px}.intro p{font-size:11px}.preview-toolbar .right .btn{padding:7px 8px}.preview-toolbar .right .optional{display:none}.stage{padding:4px 5px 0}}
+/* Direction artistique Le Hub — palette nuit, violet et turquoise */
+:root{
+ --ink:#f4f5ff;--muted:#a1a9c4;--paper:#0b1020;--surface:rgba(20,27,48,.88);
+ --line:rgba(164,176,220,.15);--red:#9586ff;--blue:#8cb4e2;--pink:#e6b8ba;
+ --ochre:#cda071;--yellow:#ffd34f;--gold:#69d9c3;
+ --shadow:0 14px 38px rgba(0,0,0,.22);--radius:16px;
+}
+body{
+ background:radial-gradient(ellipse at 50% -20%,rgba(91,77,187,.18),transparent 48%),var(--paper);
+ color:var(--ink);
+}
+.app-header{
+ background:rgba(9,14,29,.82);border-bottom-color:rgba(174,185,226,.1);
+ backdrop-filter:blur(20px);
+}
+.logo{background:linear-gradient(140deg,#a89bff,#6957e8);border-radius:10px;box-shadow:0 4px 20px #7563ff33}
+.brand strong{letter-spacing:.06em;text-transform:uppercase}
+.brand strong::after{content:".";color:#9586ff}
+.brand small{color:#a1a9c4}
+.panel,.intro-card,.preview-card{
+ background:rgba(20,27,48,.88);border-color:rgba(164,176,220,.14);
+ box-shadow:0 14px 38px rgba(0,0,0,.18);
+}
+.eyebrow{color:#aaa0ff}
+.intro h1{color:#f4f5ff}
+.intro p,.preview-toolbar p,.preview-foot .note{color:#a1a9c4}
+.btn{
+ color:#e8eaff;background:rgba(19,26,46,.9);border-color:rgba(166,178,222,.2);
+}
+.btn:hover{border-color:#8273ee;box-shadow:0 5px 18px #0003}
+.btn.primary{background:#7665e6;border-color:#7665e6;color:#fff}
+.btn.primary:hover{background:#8c7aff}
+.btn.accent{background:#69d9c3;border-color:#69d9c3;color:#0b1020}
+.btn.soft{background:#1a2240}
+.field label,.checkrow{color:#aab2cd}
+.field input,.field select,.field textarea{
+ color:#f4f5ff;background:#11182b;border-color:rgba(166,178,222,.2);
+}
+.field input::placeholder,.field textarea::placeholder{color:#737e9f}
+.field input:focus,.field select:focus,.field textarea:focus{
+ border-color:#8273ee;box-shadow:0 0 0 3px #8170ed1c;
+}
+.item-row{color:#f4f5ff;background:transparent}
+.item-row:hover{background:#1a2240}
+.item-row.selected{background:#7665e624;border-color:#8e7cff4d}
+.item-row small,.item-row .edit-icon{color:#a1a9c4}
+.section-head .num{color:#c4bbff;background:#7665e624}
+.color-choice{outline-color:#35405f}
+.color-choice.active{outline-color:#a99eff}
+.pill{color:#c4cbe0;background:#11182b;border-color:rgba(166,178,222,.18)}
+.save-status{color:#69d9c3}
+.preview-toolbar,.preview-foot{background:rgba(13,19,35,.75);border-color:rgba(164,176,220,.13)}
+.stage{background:#fff}
+.preview-toolbar h2,.section-head h2{color:#f4f5ff}
+.help-card{background:linear-gradient(100deg,#8b7cff0c,#4bcbb90a);border-color:#9b8bff35}
+.help-icon{background:#8674ff17;color:#b6adff}
+.help-card h3{color:#f4f5ff}
+.help-card p{color:#a1a9c4}
+.editor-empty{border-color:#35405f;color:#a1a9c4;background:#11182b}
+.list-stack{scrollbar-color:#35405f #11182b}
+.notice{background:#7665e6;box-shadow:0 8px 28px #0005}
+.notice.error{background:#9b2c58}
+@media(max-width:800px){
+ .app-header{background:rgba(9,14,29,.92)}
+ .layout{padding:12px}
+}
 </style>
 </head>
 <body>
