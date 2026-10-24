@@ -435,8 +435,13 @@ function renderSvg(){
   }
    // Cassure blanche en zigzag pour signaler qu'une durée est condensée.
    // Le titre est dessiné après cette forme afin de rester toujours au premier plan.
-   if(x2-x1>58){
-    const cx=(x1+x2)/2,half=22,notch=10;
+   if(x2-x1>20){
+    const span=x2-x1;
+    const breakWidth=span*0.15;
+    const half=breakWidth/2;
+    // Nombre d'or : la cassure est placée à 61,8 % de la longueur du temps condensé.
+    const cx=x1+span*0.618;
+    const notch=Math.min(10,Math.max(3,breakWidth*0.22));
     const d="M"+(cx-half)+" "+top+
       " L"+(cx-half+notch)+" "+(top+bh*0.28)+
       " L"+(cx-half)+" "+(top+bh*0.43)+
