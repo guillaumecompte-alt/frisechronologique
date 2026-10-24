@@ -26,6 +26,7 @@
     <button class="btn optional" id="jsonBtn" type="button"><span class="icon">↧</span> Projet JSON</button>
     <button class="btn mobile-hide" id="svgBtn" type="button"><span class="icon">◇</span> SVG</button>
     <button class="btn primary" id="pngBtn" type="button"><span class="icon">↓</span> Exporter PNG</button>
+    <button class="btn" id="blankSheetBtn" type="button">Fiche vierge élèves</button>
     <input type="file" id="importFile" accept=".json,application/json" class="hidden">
   </div>
 </header>
@@ -112,6 +113,7 @@ function examples(){return {
  events:[],
  compressions:[]
 }}
+let worksheetMode=false;
 let state;
 let selected={type:"period",id:"p-pre"};
 let noticeTimer=null;
@@ -303,7 +305,7 @@ function renderSvg(){
   out.push(pathPeriod(p,scale,top,bh));
   // Les périodes ne sont plus redimensionnables directement sur la frise.
   const finalPeriod=Number(p.end)>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;const available=x2-x1;const px=finalPeriod?x1+available*0.46:x1+available/2;
-  if(available>10){
+  if(!worksheetMode&&available>10){
    const name=String(p.name||"").toUpperCase();
    const sideMargin=Math.min(8,Math.max(3,available*0.12));
    const usableWidth=Math.max(1,available-sideMargin*2-(finalPeriod?3:0));
@@ -331,8 +333,8 @@ function renderSvg(){
   if(birthBottom){out.push(line(bx,top+bh,bx,birthLabelY,'stroke="#ef4036" stroke-width="2.1"'));}
   else{out.push(line(bx,birthLabelY+38,bx,top,'stroke="#ef4036" stroke-width="2.1"'));}
   out.push('<rect x="'+(bx-96)+'" y="'+birthLabelY+'" width="192" height="42" rx="7" fill="#fff5f3" stroke="#ffd0ca" data-birth-label="true" style="cursor:grab"/>');
-  out.push(text(bx,(birthBottom?326:103)+(Number(state.timeline.birthLabelOffsetY)||0),"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036" data-birth-label="true" style="cursor:grab"'));
-  out.push(text(bx,(birthBottom?344:120)+(Number(state.timeline.birthLabelOffsetY)||0),"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55" data-birth-label="true" style="cursor:grab"'));
+  out.push(text(bx,(birthBottom?326:103)+(Number(state.timeline.birthLabelOffsetY)||0),worksheetMode?"":"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036" data-birth-label="true" style="cursor:grab"'));
+  out.push(text(bx,(birthBottom?344:120)+(Number(state.timeline.birthLabelOffsetY)||0),worksheetMode?"":"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55" data-birth-label="true" style="cursor:grab"'));
  }
  const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
  const prior=[];
@@ -360,8 +362,8 @@ function renderSvg(){
    const labelH=e.image?112:42;
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer"/>');
    if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
-   out.push(text(bx+boxW/2,labelY+(e.image?83:16),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?83:16),worksheetMode?"":e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
+   out.push(text(bx+boxW/2,labelY+(e.image?99:34),worksheetMode?"":fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
    out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="transparent" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer;pointer-events:all"/>');
   }else{
    const labelY=314+lane*31+(Number(e.labelOffsetY)||0);
@@ -520,6 +522,34 @@ function readSvg(){
  clone.setAttribute("xmlns","http://www.w3.org/2000/svg");clone.setAttribute("width","1400");clone.setAttribute("height","420");
  const style=document.createElementNS("http://www.w3.org/2000/svg","style");style.textContent='text{font-family:Inter,Arial,sans-serif}';clone.insertBefore(style,clone.firstChild);
  return new XMLSerializer().serializeToString(clone)
+}
+function shuffled(items){return items.slice().sort(function(){return Math.random()-.5})}
+function exportBlankWorksheet(){
+ const originalState=JSON.parse(JSON.stringify(state));
+ let raw="";
+ try{
+  worksheetMode=true;renderSvg();raw=readSvg();
+ }finally{
+  worksheetMode=false;state=originalState;refresh();
+ }
+ const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
+ const eventNames=shuffled(state.events.map(function(e){return e.title}));
+ const eventDates=shuffled(state.events.map(function(e){return fmtYear(e.date,true)}));
+ const cols=[{title:"LISTE 1 — PÉRIODES ET TEMPS CONDENSÉS",items:periods},{title:"LISTE 2 — ÉVÉNEMENTS",items:eventNames},{title:"LISTE 3 — DATES",items:eventDates}];
+ const xPositions=[35,500,965],colWidth=400,rowHeight=22,baseY=470;
+ let extra='<rect x="0" y="430" width="1400" height="470" fill="#ffffff"/><text x="35" y="458" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#202d43">AIDE POUR COMPLÉTER LA FRISE</text>';
+ cols.forEach(function(col,idx){
+  const x=xPositions[idx];extra+='<text x="'+x+'" y="'+(baseY+24)+'" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#202d43">'+escapeHtml(col.title)+'</text>';
+  col.items.forEach(function(item,j){
+   const y=baseY+52+j*rowHeight;
+   if(y<880)extra+='<text x="'+x+'" y="'+y+'" font-family="Arial,sans-serif" font-size="12" fill="#202d43">'+(j+1)+'. '+escapeHtml(item)+'</text>';
+  });
+ });
+ raw=raw.replace(/height="420"/,'height="920"').replace(/viewBox="0 0 1400 420"/,'viewBox="0 0 1400 920"').replace('</svg>',extra+'</svg>');
+ const blob=new Blob([raw],{type:"image/svg+xml;charset=utf-8"});
+ const url=URL.createObjectURL(blob),img=new Image();
+ img.onload=function(){try{const canvas=document.createElement("canvas");canvas.width=2800;canvas.height=1840;const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(function(png){URL.revokeObjectURL(url);if(png){downloadBlob(png,projectFilename("fiche-vierge.png"));toast("Fiche vierge élèves exportée.")}else toast("Export impossible.",true)},"image/png")}catch(e){URL.revokeObjectURL(url);toast("Export impossible.",true)}};
+ img.onerror=function(){URL.revokeObjectURL(url);toast("Impossible de générer la fiche vierge.",true)};img.src=url;
 }
 function exportSvg(){const raw=readSvg();downloadBlob(new Blob([raw],{type:"image/svg+xml;charset=utf-8"}),projectFilename("svg"));toast("Frise SVG exportée.")}
 function exportPng(){
@@ -750,6 +780,7 @@ document.getElementById("jsonBtn").addEventListener("click",exportJson);
 document.getElementById("svgBtn").addEventListener("click",exportSvg);
 document.getElementById("svgBtn2").addEventListener("click",exportSvg);
 document.getElementById("pngBtn").addEventListener("click",exportPng);
+document.getElementById("blankSheetBtn").addEventListener("click",exportBlankWorksheet);
 document.getElementById("pngBtn2").addEventListener("click",exportPng);
 document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click()});
 document.getElementById("importFile").addEventListener("change",function(e){
