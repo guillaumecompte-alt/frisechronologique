@@ -433,6 +433,24 @@ function renderSvg(){
    out.push(line(x1,top,x1,top+bh,dash));
    out.push(line(x2,top,x2,top+bh,dash));
   }
+   // Cassure blanche en zigzag pour signaler qu'une durée est condensée.
+   // Le titre est dessiné après cette forme afin de rester toujours au premier plan.
+   if(x2-x1>58){
+    const cx=(x1+x2)/2,half=22,notch=10;
+    const d="M"+(cx-half)+" "+top+
+      " L"+(cx-half+notch)+" "+(top+bh*0.28)+
+      " L"+(cx-half)+" "+(top+bh*0.43)+
+      " L"+(cx-half+notch)+" "+(top+bh*0.58)+
+      " L"+(cx-half)+" "+(top+bh*0.73)+
+      " L"+(cx-half+notch)+" "+(top+bh)+
+      " L"+(cx+half)+" "+(top+bh)+
+      " L"+(cx+half-notch)+" "+(top+bh*0.73)+
+      " L"+(cx+half)+" "+(top+bh*0.58)+
+      " L"+(cx+half-notch)+" "+(top+bh*0.43)+
+      " L"+(cx+half)+" "+(top+bh*0.28)+
+      " L"+(cx+half-notch)+" "+top+" Z";
+    out.push('<path d="'+d+'" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" pointer-events="none"/>');
+   }
    if(x2-x1>8){
     const mid=(x1+x2)/2;
     const label=(c.name||"Temps condensé").trim();
