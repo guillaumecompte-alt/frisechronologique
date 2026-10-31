@@ -102,9 +102,9 @@ body{
     <section class="panel settings-panel">
       <div class="section-head"><div><div class="eyebrow">Configuration</div><h2>Ma frise</h2></div><span class="num">01</span></div>
       <form id="timelineForm">
-        <div class="field"><label for="timelineTitle">Titre de la frise</label><input id="timelineTitle" name="title" maxlength="100" value="Les grandes périodes de l'Histoire" required></div>
+        <div class="field"><label for="timelineTitle">Titre de la frise</label><input id="timelineTitle" name="title" maxlength="100" value="Ma frise chronologique" required></div>
         <div class="two-col">
-          <div class="field"><label for="timelineStart">Date de début</label><input id="timelineStart" name="start" type="number" step="1" value="-2500000" required></div>
+          <div class="field"><label for="timelineStart">Date de début</label><input id="timelineStart" name="start" type="number" step="1" value="-100" required></div>
           <div class="field"><label for="timelineEnd">Date de fin</label><input id="timelineEnd" name="end" type="number" step="1" value="2026" required></div>
           <div class="field"><label for="dateFormat">Format d’affichage des dates</label><select id="dateFormat" name="dateFormat"><option value="jc">Avec J.-C. (400 av. J.-C. ; 560 ap. J.-C.)</option><option value="relative">Nombres relatifs (-400 ; 560)</option></select></div>
         </div>
@@ -124,15 +124,15 @@ body{
     </section>
 
     <section class="panel">
-      <div class="section-head"><div><div class="eyebrow">Votre frise</div><h2>Périodes</h2></div><span class="num" id="periodCount">5</span></div>
+      <div class="section-head"><div><div class="eyebrow">Votre frise</div><h2>Périodes</h2></div><span class="num" id="periodCount">0</span></div>
       <div class="list-stack" id="periodList"></div>
     </section>
     <section class="panel">
-      <div class="section-head"><div><div class="eyebrow">Repères</div><h2>Événements</h2></div><span class="num" id="eventCount">3</span></div>
+      <div class="section-head"><div><div class="eyebrow">Repères</div><h2>Événements</h2></div><span class="num" id="eventCount">0</span></div>
       <div class="list-stack" id="eventList"></div>
     </section>
     <section class="panel">
-      <div class="section-head"><div><div class="eyebrow">Échelle</div><h2>Temps condensés</h2></div><span class="num" id="breakCount">1</span></div>
+      <div class="section-head"><div><div class="eyebrow">Échelle</div><h2>Temps condensés</h2></div><span class="num" id="breakCount">0</span></div>
       <div class="list-stack" id="breakList"></div>
     </section>
 
@@ -140,7 +140,7 @@ body{
 
   <main class="content">
     <div class="intro">
-      <div><div class="eyebrow">Création pédagogique</div><h1 id="pageTitle">Les grandes périodes de l'Histoire</h1><p>Compose une chronologie claire, colore les périodes et place les événements essentiels.</p></div>
+      <div><div class="eyebrow">Création pédagogique</div><h1 id="pageTitle">Ma frise chronologique</h1><p>Compose une chronologie claire, colore les périodes et place les événements essentiels.</p></div>
       <span class="pill"><span class="dot"></span> Projet enregistré sur cet appareil</span>
     </div>
     <section class="preview-card">
@@ -150,8 +150,8 @@ body{
       </div>
       <div class="stage" id="stage"><svg id="timelineSvg" class="timeline-svg" role="img" aria-label="Frise chronologique"></svg></div>
       <div class="preview-foot">
-        <div class="note"><strong>TIPS :</strong> Clique sur les dates pour les masquer ou les faire réapparaître.</div>
-        <div class="stats"><span id="periodStat">5 périodes</span><span id="eventStat">3 événements</span><span id="breakStat">1 rupture</span></div>
+        <div class="note"><strong>TIPS :</strong> Clique sur une période ou un événement pour le modifier, glisse une étiquette vers le haut ou le bas pour la déplacer, et clique sur une date pour la masquer ou la faire réapparaître.</div>
+        <div class="stats"><span id="periodStat">0 période</span><span id="eventStat">0 événement</span><span id="breakStat">0 rupture</span></div>
       </div>
     </section>
     <section class="panel editor-panel" id="editorPanel">
@@ -172,7 +172,7 @@ const COLORS=[
  {name:"Lavande",value:"#c9c1e8"},{name:"Corail",value:"#f0a28a"},{name:"Gris",value:"#d5d8dc"},{name:"Noir",value:"#000000"}
 ];
 function uid(){return "id-"+Math.random().toString(36).slice(2,10)+"-"+Date.now().toString(36)}
-function examples(){return {
+function blankProject(){return {
  version:1,
  timeline:{title:"Ma frise chronologique",start:-100,end:2026},
  periods:[],
@@ -181,8 +181,10 @@ function examples(){return {
 }}
 let worksheetMode=false;
 let state;
-let selected={type:"period",id:"p-pre"};
+let selected={type:"period",id:""};
 let noticeTimer=null;
+let dragPreview=null;
+let saveFailed=false;
 let lastSelectedColor=COLORS[0].value;
 function validYear(v){return Number.isInteger(Number(v))&&Number(v)!==0&&Number.isFinite(Number(v))}
 function histOrd(y){y=Number(y);return y<0?y+1:y}
@@ -198,13 +200,40 @@ function fmtYear(y,short){
  return short?n+" ap. J.-C.":n+" ap. J.-C.";
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+// Les valeurs venant d'un fichier importé ou du stockage sont insérées dans du SVG/HTML :
+// on n'accepte que des couleurs hexadécimales et des images en data:image (hors SVG, qui peut contenir du script).
+function safeColor(v,fallback){return typeof v==="string"&&/^#[0-9a-fA-F]{3,8}$/.test(v)?v:fallback}
+function safeImage(v){return typeof v==="string"&&/^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(v)?v:undefined}
+function sanitizeProject(v){
+ const ids=new Set();
+ function cleanId(x){let id=typeof x.id==="string"&&x.id&&!ids.has(x.id)?x.id:uid();ids.add(id);x.id=id}
+ v.periods.forEach(function(p){cleanId(p);p.color=safeColor(p.color,COLORS[0].value);if(p.hatchColor!==undefined)p.hatchColor=safeColor(p.hatchColor,p.color);if(p.hatchBackground!==undefined)p.hatchBackground=safeColor(p.hatchBackground,"#d5d8dc")});
+ v.events.forEach(function(e){cleanId(e);e.textColor=safeColor(e.textColor,"#202d43");const img=safeImage(e.image);if(img)e.image=img;else delete e.image});
+ v.compressions.forEach(function(c){cleanId(c);c.color=safeColor(c.color,"#66758b")});
+ v.timeline.title=String(v.timeline.title||"Ma frise chronologique");v.timeline.start=Number(v.timeline.start);v.timeline.end=Number(v.timeline.end);
+ v.periods.forEach(function(p){p.name=String(p.name);p.start=Number(p.start);p.end=Number(p.end)});
+ v.events.forEach(function(e){e.title=String(e.title);e.date=Number(e.date)});
+ v.compressions.forEach(function(c){c.start=Number(c.start);c.end=Number(c.end)});
+ if(!Array.isArray(v.timeline.hiddenDateTicks))v.timeline.hiddenDateTicks=[];
+ v.timeline.hiddenDateTicks=v.timeline.hiddenDateTicks.map(String);
+ return v
+}
 function loadState(){
- try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const v=JSON.parse(raw);if(v&&v.timeline&&Array.isArray(v.periods)&&Array.isArray(v.events)&&Array.isArray(v.compressions))return v}}catch(e){}
- return examples()
+ try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const v=JSON.parse(raw);if(v&&v.timeline&&Array.isArray(v.periods)&&Array.isArray(v.events)&&Array.isArray(v.compressions))return sanitizeProject(v)}}catch(e){}
+ return blankProject()
 }
 state=loadState();
 function saveState(){
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));document.getElementById("saveStatus").textContent="● Enregistré localement"}catch(e){document.getElementById("saveStatus").textContent="Sauvegarde indisponible"}
+ const status=document.getElementById("saveStatus");
+ try{
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  status.textContent="● Enregistré localement";status.style.color="";saveFailed=false;
+ }catch(e){
+  status.textContent="⚠ Sauvegarde impossible";status.style.color="#ff8a8a";
+  // Prévenir une seule fois, au moment où la sauvegarde commence à échouer.
+  if(!saveFailed)setTimeout(function(){toast("Le projet est trop lourd pour la sauvegarde du navigateur (souvent à cause des images). Exporte-le en JSON pour ne rien perdre.",true)},0);
+  saveFailed=true;
+ }
 }
 function toast(message,error){
  const el=document.getElementById("notice");el.textContent=message;el.classList.remove("hidden","error");if(error)el.classList.add("error");
@@ -229,7 +258,7 @@ function renderLists(){
   const el=document.getElementById(d.el);
   if(!d.items.length){el.innerHTML='<div class="empty-list">Aucun élément pour le moment.</div>';return}
   el.innerHTML=d.items.map(function(i){
-   return '<button type="button" class="item-row '+(selected.type===d.type&&selected.id===i.id?"selected":"")+'" data-select-type="'+d.type+'" data-select-id="'+escapeHtml(i.id)+'"><span class="swatch" style="background:'+d.color(i)+'"></span><span class="item-label"><strong>'+escapeHtml(d.title(i))+'</strong><small>'+escapeHtml(d.sub(i))+'</small></span><span class="edit-icon">✎</span></button>'
+   return '<button type="button" class="item-row '+(selected.type===d.type&&selected.id===i.id?"selected":"")+'" data-select-type="'+d.type+'" data-select-id="'+escapeHtml(i.id)+'"><span class="swatch" style="background:'+escapeHtml(d.color(i))+'"></span><span class="item-label"><strong>'+escapeHtml(d.title(i))+'</strong><small>'+escapeHtml(d.sub(i))+'</small></span><span class="edit-icon">✎</span></button>'
   }).join("")
  });
  updateCounts()
@@ -262,7 +291,7 @@ function renderEditor(){
   html+=field("itemDate","Date de l'événement",item.date,"number",'required');
    html+='<div class="field"><label>Couleur du texte</label><div class="palette" role="group" aria-label="Couleur du texte">'+[{name:"Noir",value:"#202d43"},{name:"Bleu",value:"#2f6db3"},{name:"Vert",value:"#27834a"},{name:"Rouge (naissance de Jésus)",value:"#ef4036"},{name:"Violet",value:"#8055a5"}].map(function(c){return '<button type="button" class="color-choice '+((item.textColor||"#202d43")===c.value?"active":"")+'" data-event-text-color="'+c.value+'" title="'+c.name+'" aria-label="Choisir la couleur '+c.name+'" style="background:'+c.value+'"></button>'}).join("")+'</div></div>';
   html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
-  html+='<div class="field"><label for="itemImage">Image de l’événement</label><input id="itemImage" name="itemImage" type="file" accept="image/*"><p class="field-help">Choisis une image sur ton ordinateur (5 Mo maximum). Elle sera intégrée à l’étiquette et aux exports.</p>'+(item.image?'<div class="event-image-preview"><img src="'+item.image+'" alt="Image de l’événement" style="max-width:120px;max-height:80px;display:block;margin:8px 0"><button class="btn small" type="button" id="removeEventImageBtn">Retirer l’image</button></div>':'')+'</div>';
+  html+='<div class="field"><label for="itemImage">Image de l’événement</label><input id="itemImage" name="itemImage" type="file" accept="image/*"><p class="field-help">Choisis une image sur ton ordinateur (15 Mo maximum). Elle est réduite automatiquement puis intégrée à l’étiquette et aux exports.</p>'+(item.image?'<div class="event-image-preview"><img src="'+escapeHtml(item.image)+'" alt="Image de l’événement" style="max-width:120px;max-height:80px;display:block;margin:8px 0"><button class="btn small" type="button" id="removeEventImageBtn">Retirer l’image</button></div>':'')+'</div>';
   html+='<div class="field"><label for="itemPosition">Position de l\'étiquette</label><select id="itemPosition" name="itemPosition"><option value="top" '+(item.position!=="bottom"?"selected":"")+'>Au-dessus de la frise</option><option value="bottom" '+(item.position==="bottom"?"selected":"")+'>En-dessous de la frise</option></select></div>';
  }else{
   html+=field("itemName","Nom du temps condensé",item.name||"Temps condensé","text",'maxlength="100" required');
@@ -276,7 +305,6 @@ function renderEditor(){
  root.innerHTML=html;
 }
 function refresh(){document.getElementById("pageTitle").textContent=state.timeline.title;document.getElementById("timelineTitle").value=state.timeline.title;document.getElementById("timelineStart").value=state.timeline.start;document.getElementById("timelineEnd").value=state.timeline.end;document.getElementById("dateFormat").value=state.timeline.dateFormat||"jc";renderLists();renderEditor();renderSvg();saveState()}
-function colorForYear(y,scale){return scale.map(y)}
 function getScale(){
  const lo=Number(state.timeline.start),hi=Number(state.timeline.end);
  const vals=[lo,hi];
@@ -313,244 +341,233 @@ function getScale(){
  }
  return {map:map,intervals:intervals,x0:X0,x1:X1}
 }
+// Forme d'une période : rectangle, ou flèche si elle atteint la fin de la frise.
+// Un bord qui touche un temps condensé est souligné de pointillés blancs.
 function pathPeriod(p,scale,top,height){
- let a=Number(p.start),b=Number(p.end),x1=scale.map(a),x2=scale.map(b);
+ const a=Number(p.start),b=Number(p.end),x1=scale.map(a),x2=scale.map(b);
  if(b<Number(state.timeline.start)||a>Number(state.timeline.end))return "";
- const waveL=null;
- const waveR=null;
- const dottedL=state.compressions.find(function(c){return Number(c.start)===a});
- const dottedR=state.compressions.find(function(c){return Number(c.end)===b});
- let pts=[];
- function edge(x,dir,kind){
-  if(kind){let s="";for(let j=0;j<=10;j++){let yy=top+height*j/10;let xx=x+(kind==="wave"?Math.sin(j*Math.PI*1.7)*4:0);if(j===0)s+="M"+xx.toFixed(2)+" "+yy.toFixed(2);else s+=" L"+xx.toFixed(2)+" "+yy.toFixed(2)}return s}
-  return "M"+x.toFixed(2)+" "+top+" L"+x.toFixed(2)+" "+(top+height)
- }
- const leftKind=waveL?"wave":dottedL?"dotted":null,rightKind=waveR?"wave":dottedR?"dotted":null;
- let d="M"+x1+" "+top+" ";
+ const dottedL=state.compressions.some(function(c){return Number(c.start)===a});
+ const dottedR=state.compressions.some(function(c){return Number(c.end)===b});
  const isFinalPeriod=b>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;
- if(isFinalPeriod){d+="L"+(x2-44)+" "+top+" L"+x2+" "+(top+height/2)+" L"+(x2-44)+" "+(top+height)+" L"+x1+" "+(top+height)+" Z";}
- else if(leftKind==="wave"){for(let j=0;j<=10;j++){d+=(j===0?"":" L")+(x1+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
- else d+="L"+x1+" "+(top+height)+" ";
- if(!isFinalPeriod){d+="L"+x2+" "+(top+height)+" ";
- if(rightKind==="wave"){for(let j=10;j>=0;j--){d+="L"+(x2+Math.sin(j*Math.PI*1.7)*4).toFixed(2)+" "+(top+height*j/10).toFixed(2)+" "}}
- else d+="L"+x2+" "+top+" ";
- d+="Z";}
- const hatchSelected=["hatched","hachuree","hatched-color"].includes(String(p.fillStyle||"").toLowerCase());
- const fill=hatchSelected?'url(#periodHatch_'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,"")+')':escapeHtml(p.color);
+ const d=isFinalPeriod
+  ?"M"+x1+" "+top+" L"+(x2-44)+" "+top+" L"+x2+" "+(top+height/2)+" L"+(x2-44)+" "+(top+height)+" L"+x1+" "+(top+height)+" Z"
+  :"M"+x1+" "+top+" L"+x1+" "+(top+height)+" L"+x2+" "+(top+height)+" L"+x2+" "+top+" Z";
+ const fill=p.fillStyle==="hatched"?'url(#periodHatch_'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,"")+')':escapeHtml(p.color);
+ const dots='" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>';
  return '<path d="'+d+'" fill="'+fill+'" stroke="'+escapeHtml(p.color)+'" stroke-width="1"/>'+
- (leftKind==="dotted"?'<path d="M'+x1+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")+
- (rightKind==="dotted"?'<path d="M'+x2+' '+top+' V'+(top+height)+'" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>':"")
+  (dottedL?'<path d="M'+x1+' '+top+' V'+(top+height)+dots:"")+
+  (dottedR&&!isFinalPeriod?'<path d="M'+x2+' '+top+' V'+(top+height)+dots:"")
+}
+// Mise en page verticale calculée à chaque rendu : la bande se place sous les étiquettes du haut,
+// et la hauteur totale s'adapte aux dates et aux étiquettes du bas.
+const W=1400,BAND_H=80,HEADER_Y=46,LANE_GAP=12,LABEL_H=42,LABEL_IMG_H=112;
+let layout={top:178,bh:BAND_H,H:420};
+function labelWidth(title){
+ const tw=Array.from(String(title||"")).reduce(function(n,ch){return n+("MW@#%".includes(ch)?9:("il.,' ".includes(ch)?3.8:6.6))},0);
+ return Math.max(106,Math.min(320,tw+28))
+}
+// Range les étiquettes (triées par x) en rangées : deux boîtes d'une même rangée ne se chevauchent jamais.
+function placeInLanes(items){
+ const lanes=[];
+ items.forEach(function(it){
+  it.bx=Math.min(W-it.w-22,Math.max(22,it.x-it.w/2));
+  let l=0;
+  while(lanes[l]&&lanes[l].items.some(function(q){return it.bx<q.bx+q.w+10&&q.bx<it.bx+it.w+10}))l++;
+  if(!lanes[l])lanes[l]={items:[],h:0};
+  lanes[l].items.push(it);lanes[l].h=Math.max(lanes[l].h,it.h);it.lane=lanes[l];
+ });
+ return lanes
+}
+function imageCorners(x,y,w,h){
+ const r=10;
+ return 'M '+x+' '+y+' L '+(x+r)+' '+y+' Q '+x+' '+y+' '+x+' '+(y+r)+' Z M '+(x+w)+' '+y+' L '+(x+w-r)+' '+y+' Q '+(x+w)+' '+y+' '+(x+w)+' '+(y+r)+' Z M '+x+' '+(y+h)+' L '+(x+r)+' '+(y+h)+' Q '+x+' '+(y+h)+' '+x+' '+(y+h-r)+' Z M '+(x+w)+' '+(y+h)+' L '+(x+w-r)+' '+(y+h)+' Q '+(x+w)+' '+(y+h)+' '+(x+w)+' '+(y+h-r)+' Z'
 }
 function renderSvg(){
  const svg=document.getElementById("timelineSvg");if(!svg)return;
- const W=1400;let H=420;const top=178,bh=80,scale=getScale(),lo=Number(state.timeline.start),hi=Number(state.timeline.end);
- const out=[];
+ const bh=BAND_H,scale=getScale(),lo=Number(state.timeline.start),hi=Number(state.timeline.end);
+ const showBirth=lo<=-1&&hi>=1,birthBottom=state.timeline.birthPosition==="bottom";
+ const birthX=showBirth?(scale.map(-1)+scale.map(1))/2:0;
  function line(x1,y1,x2,y2,attrs){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" '+(attrs||"")+'/>'}
  function text(x,y,t,attrs){return '<text x="'+x+'" y="'+y+'" '+(attrs||"")+'>'+escapeHtml(t)+'</text>'}
+
+ // 1. Étiquettes (événements + repère de l'an 1) réparties en rangées.
+ const topItems=[],bottomItems=[];
+ state.events.forEach(function(e){
+  const d=Number(e.date);if(!Number.isFinite(d)||d<lo||d>hi)return;
+  const it={kind:"event",e:e,x:scale.map(d),w:labelWidth(e.title),h:e.image?LABEL_IMG_H:LABEL_H,offset:Number(e.labelOffsetY)||0};
+  (e.position==="bottom"?bottomItems:topItems).push(it);
+ });
+ if(showBirth)(birthBottom?bottomItems:topItems).push({kind:"birth",x:birthX,w:192,h:42,offset:Number(state.timeline.birthLabelOffsetY)||0});
+ const byX=function(a,b){return a.x-b.x};topItems.sort(byX);bottomItems.sort(byX);
+ const topLanes=placeInLanes(topItems),bottomLanes=placeInLanes(bottomItems);
+
+ // Rangées du haut : la rangée 0 est la plus proche de la bande. Positions relatives à (top - 22).
+ let cursor=0;
+ topLanes.forEach(function(l){cursor+=l.h;l.rel=-cursor;cursor+=LANE_GAP});
+ let minRel=0;
+ topItems.forEach(function(it){it.rel=it.lane.rel+it.lane.h-it.h+it.offset;minRel=Math.min(minRel,it.rel)});
+ const top=Math.max(70,HEADER_Y-minRel+22);
+ topItems.forEach(function(it){it.y=Math.min(top-22+it.rel,top-8-it.h)});
+
+ // 2. Dates sous la bande, sur plusieurs rangées si elles sont proches.
+ const candidates=[{y:lo},{y:hi}];
+ state.periods.forEach(function(p){candidates.push({y:Number(p.start)},{y:Number(p.end)})});
+ state.compressions.forEach(function(p){candidates.push({y:Number(p.start)},{y:Number(p.end)})});
+ const seen=new Set();
+ const ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
+ const tickLanes=[];
+ ticks.forEach(function(t){
+  t.label=fmtYear(t.y,true);t.x=scale.map(t.y);t.w=Math.max(48,t.label.length*5.8+10);
+  let lane=0;
+  while(tickLanes[lane]&&tickLanes[lane].some(function(q){return Math.abs(q.x-t.x)<(q.w+t.w)/2+7}))lane++;
+  (tickLanes[lane]=tickLanes[lane]||[]).push(t);t.lane=lane;
+ });
+ const ticksBottom=top+bh+29+Math.max(0,tickLanes.length-1)*23+8;
+
+ // 3. Rangées du bas, sous les dates.
+ let yb=ticksBottom+16,maxBottom=ticksBottom;
+ bottomLanes.forEach(function(l){l.y=yb;yb+=l.h+LANE_GAP});
+ bottomItems.forEach(function(it){it.y=Math.max(top+bh+8,it.lane.y+it.offset);maxBottom=Math.max(maxBottom,it.y+it.h)});
+ const H=Math.round(maxBottom+44);
+ layout={top:top,bh:bh,H:H};
+
+ // 4. Dessin.
+ const out=[];
  out.push('<title>'+escapeHtml(state.timeline.title)+'</title>');
  out.push('<desc>Frise chronologique éditable de '+escapeHtml(fmtYear(lo))+' à '+escapeHtml(fmtYear(hi))+'.</desc>');
- out.push('<defs><linearGradient id="bgFade" x1="0" x2="1"><stop offset="0" stop-color="#fcfbf8"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#202d43" flood-opacity=".06"/></filter></defs>');
+ out.push('<defs><filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#202d43" flood-opacity=".06"/></filter>');
  state.periods.filter(function(p){return p.fillStyle==="hatched"}).forEach(function(p){
   const pid=String(p.id).replace(/[^a-zA-Z0-9_-]/g,"");
-  const hatch=escapeHtml(p.hatchColor||p.color||"#66758b");
-  const bg=escapeHtml(p.hatchBackground||"#f4f1eb");
-  // Motif SVG : fond et hachures sont configurables indépendamment.
-  out.push('<defs><pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="'+bg+'"/><path d="M-3 3 L3 -3 M0 10 L10 0 M7 13 L13 7" fill="none" stroke="'+hatch+'" stroke-width="3.2" stroke-linecap="square"/></pattern></defs>');
+  out.push('<pattern id="periodHatch_'+pid+'" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="'+escapeHtml(p.hatchBackground||"#f4f1eb")+'"/><path d="M-3 3 L3 -3 M0 10 L10 0 M7 13 L13 7" fill="none" stroke="'+escapeHtml(p.hatchColor||p.color||"#66758b")+'" stroke-width="3.2" stroke-linecap="square"/></pattern>');
  });
+ out.push('</defs>');
  out.push('<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="16" fill="#ffffff"/>');
  out.push(text(W/2,18,state.timeline.title,'text-anchor="middle" font-size="15" font-weight="800" fill="#243248"'));
  out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
- // Flèche rouge et libellé « HISTOIRE » supprimés de l'aperçu.
- // Event labels get separate lanes when points are close to each other.
 
- // Band and colored periods.
- out.push('<rect x="'+scale.x0+'" y="'+top+'" width="'+(scale.x1-scale.x0)+'" height="'+bh+'" rx="7" fill="#f0eee7" filter="url(#softShadow)"/>');
- state.periods.slice().sort(function(a,b){return Number(a.start)-Number(b.start)}).forEach(function(p){
-  const x1=Math.max(scale.x0,scale.map(p.start)),x2=Math.min(scale.x1,scale.map(p.end));
-  if(x2<=x1)return;
+ // Bande de fond, terminée par une pointe quand aucune période n'atteint la fin.
+ const endPeriod=state.periods.find(function(p){return Number(p.start)<hi&&Number(p.end)>=hi});
+ const x0=scale.x0,x1=scale.x1,mid=top+bh/2;
+ if(endPeriod)out.push('<rect x="'+x0+'" y="'+top+'" width="'+(x1-x0)+'" height="'+bh+'" rx="7" fill="#f0eee7" filter="url(#softShadow)"/>');
+ else out.push('<path d="M'+(x0+7)+' '+top+' H'+(x1-44)+' L'+x1+' '+mid+' L'+(x1-44)+' '+(top+bh)+' H'+(x0+7)+' Q'+x0+' '+(top+bh)+' '+x0+' '+(top+bh-7)+' V'+(top+7)+' Q'+x0+' '+top+' '+(x0+7)+' '+top+' Z" fill="#f0eee7" filter="url(#softShadow)"/>');
+
+ // Périodes et leurs noms.
+ state.periods.slice().sort(function(a,b){return histOrd(a.start)-histOrd(b.start)}).forEach(function(p){
+  const px1=Math.max(scale.x0,scale.map(p.start)),px2=Math.min(scale.x1,scale.map(p.end));
+  if(px2<=px1)return;
   out.push(pathPeriod(p,scale,top,bh));
-  // Les périodes ne sont plus redimensionnables directement sur la frise.
-  const finalPeriod=Number(p.end)>=Number(state.timeline.end)&&Math.abs(x2-scale.x1)<1;const available=x2-x1;const px=finalPeriod?x1+available*0.46:x1+available/2;
-  if(!worksheetMode&&available>10){
-   const name=String(p.name||"").toUpperCase();
-   const sideMargin=Math.min(8,Math.max(3,available*0.12));
-   const usableWidth=Math.max(1,available-sideMargin*2-(finalPeriod?3:0));
-   const words=String(name).split(/\s+/);
-   const lines=[];let lineText="";
-   words.forEach(function(word){
-    if(!lineText)lineText=word;
-    else if((lineText+" "+word).length<=Math.max(1,Math.floor(usableWidth/3.2)))lineText+=" "+word;
-    else{lines.push(lineText);lineText=word;}
-   });
-   if(lineText)lines.push(lineText);
-   const longest=Math.max.apply(null,lines.map(function(l){return l.length}))||1;
-   const fs=Math.max(2.2,Math.min(11,usableWidth/(longest*0.68)));
-   const shown=lines.length>6?lines.slice(0,5).concat(["…"]):lines;
-   const lineHeight=Math.min(13,fs+2);
-   const startY=top+bh/2-((shown.length-1)*lineHeight)/2+fs*.35;
-   shown.forEach(function(lineText,i){out.push(text(px,startY+i*lineHeight,lineText,'text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="850" fill="#243248" letter-spacing="0"'));});
-  } });
-
- // Birth of Jesus transition: separator between 1 BCE and 1 CE, not a year zero date.
- if(lo<=-1&&hi>=1){
-  const bx=(scale.map(-1)+scale.map(1))/2;
-  const birthBottom=state.timeline.birthPosition==="bottom";
-  const birthLabelY=(birthBottom?310:88)+(Number(state.timeline.birthLabelOffsetY)||0);
-  if(birthBottom){out.push(line(bx,top+bh,bx,birthLabelY,'stroke="#ef4036" stroke-width="2.1"'));}
-  else{out.push(line(bx,birthLabelY+38,bx,top,'stroke="#ef4036" stroke-width="2.1"'));}
-  out.push('<rect x="'+(bx-96)+'" y="'+birthLabelY+'" width="192" height="42" rx="7" fill="#fff5f3" stroke="#ffd0ca" data-birth-label="true" style="cursor:grab"/>');
-  out.push(text(bx,(birthBottom?326:103)+(Number(state.timeline.birthLabelOffsetY)||0),worksheetMode?"":"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036" data-birth-label="true" style="cursor:grab"'));
-  out.push(text(bx,(birthBottom?344:120)+(Number(state.timeline.birthLabelOffsetY)||0),worksheetMode?"":"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55" data-birth-label="true" style="cursor:grab"'));
- }
- const events=state.events.filter(function(e){return Number(e.date)>=lo&&Number(e.date)<=hi}).slice().sort(function(a,b){return scale.map(a.date)-scale.map(b.date)});
- const prior=[];
- events.forEach(function(e,index){
-  const x=scale.map(e.date),isBottom=e.position==="bottom";
-  let lane=0;
-  if(!isBottom){
-   for(let l=0;l<4;l++){
-    const blocked=prior.some(function(q){return q.position!=="bottom"&&q.lane===l&&Math.abs(q.x-x)<Math.max(112,Math.min(210,(q.title.length+e.title.length)*3.7))});
-    if(!blocked){lane=l;break}
-   }
-  }else{
-   for(let l=0;l<3;l++){
-    const blocked=prior.some(function(q){return q.position==="bottom"&&q.lane===l&&Math.abs(q.x-x)<Math.max(112,Math.min(210,(q.title.length+e.title.length)*3.7))});
-    if(!blocked){lane=l;break}
-   }
-  }
-  const q={x:x,lane:lane,position:e.position,title:e.title};prior.push(q);
-  const titleWidth=Array.from(String(e.title||"")).reduce(function(n,ch){return n+("MW@#%".includes(ch)?9:("il.,' ".includes(ch)?3.8:6.6));},0);const boxW=Math.max(106,Math.min(320,titleWidth+28));
-  const bx=Math.min(W-boxW-22,Math.max(22,x-boxW/2));
-  if(!isBottom){
-   const labelY=42+lane*35+(Number(e.labelOffsetY)||0);
-   out.push(line(x,top,x,labelY+(e.image?112:42),'stroke="#8993a3" stroke-width="1.1"'));
-   out.push('<circle cx="'+x+'" cy="'+top+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
-   const labelH=e.image?112:42;
-   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer"/>');
-   if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
-   out.push(text(bx+boxW/2,labelY+(e.image?83:16),worksheetMode?"":e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?99:34),worksheetMode?"":fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
-   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="transparent" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer;pointer-events:all"/>');
-  }else{
-   const labelY=314+lane*31+(Number(e.labelOffsetY)||0);
-   out.push(line(x,top+bh,x,labelY,'stroke="#8993a3" stroke-width="1.1"'));
-   out.push('<circle cx="'+x+'" cy="'+(top+bh)+'" r="5" fill="#ef4036" stroke="#fff" stroke-width="1.5" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
-   const labelH=e.image?112:42;
-   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="#fff" stroke="#e5e4de" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer"/>');
-   if(e.image){const imgX=bx+8,imgY=labelY+6,imgW=boxW-16,imgH=62,r=10;out.push('<image href="'+escapeHtml(e.image)+'" x="'+imgX+'" y="'+imgY+'" width="'+imgW+'" height="'+imgH+'" preserveAspectRatio="xMidYMid meet"/>');out.push('<path d="M '+imgX+' '+imgY+' L '+(imgX+r)+' '+imgY+' Q '+imgX+' '+imgY+' '+imgX+' '+(imgY+r)+' Z M '+(imgX+imgW)+' '+imgY+' L '+(imgX+imgW-r)+' '+imgY+' Q '+(imgX+imgW)+' '+imgY+' '+(imgX+imgW)+' '+(imgY+r)+' Z M '+imgX+' '+(imgY+imgH)+' L '+(imgX+r)+' '+(imgY+imgH)+' Q '+imgX+' '+(imgY+imgH)+' '+imgX+' '+(imgY+imgH-r)+' Z M '+(imgX+imgW)+' '+(imgY+imgH)+' L '+(imgX+imgW-r)+' '+(imgY+imgH)+' Q '+(imgX+imgW)+' '+(imgY+imgH)+' '+(imgX+imgW)+' '+(imgY+imgH-r)+' Z" fill="#fff" pointer-events="none"/>');}
-   out.push(text(bx+boxW/2,labelY+(e.image?83:15),worksheetMode?"":e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
-   out.push(text(bx+boxW/2,labelY+(e.image?99:34),worksheetMode?"":fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+escapeHtml(e.textColor||"#202d43")+'"'));
-   out.push('<rect x="'+bx+'" y="'+labelY+'" width="'+boxW+'" height="'+labelH+'" rx="6" fill="transparent" data-event-label="'+escapeHtml(e.id)+'" style="cursor:pointer;pointer-events:all"/>');
-  }
+  const finalPeriod=Number(p.end)>=hi&&Math.abs(px2-scale.x1)<1,available=px2-px1,px=finalPeriod?px1+available*0.46:px1+available/2;
+  if(worksheetMode||available<=10)return;
+  const sideMargin=Math.min(8,Math.max(3,available*0.12));
+  const usableWidth=Math.max(1,available-sideMargin*2-(finalPeriod?3:0));
+  const lines=[];let lineText="";
+  String(p.name||"").toUpperCase().split(/\s+/).forEach(function(word){
+   if(!lineText)lineText=word;
+   else if((lineText+" "+word).length<=Math.max(1,Math.floor(usableWidth/3.2)))lineText+=" "+word;
+   else{lines.push(lineText);lineText=word}
+  });
+  if(lineText)lines.push(lineText);
+  const longest=Math.max.apply(null,lines.map(function(l){return l.length}))||1;
+  const fs=Math.max(2.2,Math.min(11,usableWidth/(longest*0.68)));
+  const shown=lines.length>6?lines.slice(0,5).concat(["…"]):lines;
+  const lineHeight=Math.min(13,fs+2),startY=mid-((shown.length-1)*lineHeight)/2+fs*.35;
+  shown.forEach(function(l,i){out.push(text(px,startY+i*lineHeight,l,'text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="850" fill="#243248"'))});
  });
- // Dates : on conserve chaque repère et on répartit les étiquettes sur plusieurs lignes.
- // Les traits de rappel sont plus longs pour relier clairement l'étiquette à sa date exacte.
- const candidates=[{y:lo,label:fmtYear(lo,true),priority:10},{y:hi,label:fmtYear(hi,true),priority:10}];
- state.periods.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:5});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:5})});
- state.compressions.forEach(function(p){candidates.push({y:Number(p.start),label:fmtYear(Number(p.start),true),priority:7});candidates.push({y:Number(p.end),label:fmtYear(Number(p.end),true),priority:7})});
 
- const seen=new Set(),ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
- const lanes=[];
- ticks.forEach(function(t){
-  const x=scale.map(t.y),labelW=Math.max(48,t.label.length*5.8+10);
-  let lane=0;
-  while(lanes[lane]&&lanes[lane].some(function(q){return Math.abs(q.x-x)<(q.w+labelW)/2+7}))lane++;
-  if(!lanes[lane])lanes[lane]=[];
-  lanes[lane].push({x:x,w:labelW});
-  const y=top+bh+29+lane*23;
-  const hidden=(state.timeline.hiddenDateTicks||[]).includes(String(t.y));
-  if(!hidden){
-   out.push(line(x,top+bh,x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'));
-   out.push(line(x,top+bh+15,x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
-  }
-  const anchor=x<labelW/2+8?"start":x>W-labelW/2-8?"end":"middle";
-  const tx=anchor==="start"?Math.max(8,x):anchor==="end"?Math.min(W-8,x):x;
-  if(!hidden){out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+String(t.y)+'" style="cursor:pointer">'+escapeHtml(t.label)+'</text>');}
-  else{out.push('<rect x="'+(x-12)+'" y="'+(y-14)+'" width="24" height="20" fill="transparent" data-date-tick="'+String(t.y)+'" style="cursor:pointer"/>');}
- });
- // Agrandir la zone SVG si beaucoup de dates nécessitent plusieurs rangées.
- if(lanes.length>4){
-  H=Math.max(H,top+bh+48+lanes.length*23+30);
-  out[3]=out[3].replace('height="420"','height="'+H+'"');
- }
- // Dotted or wavy cues are drawn explicitly so breaks remain visible in the exported SVG.
+ // Temps condensés : fond teinté, bords pointillés, cassure en zigzag, nom au premier plan.
  state.compressions.forEach(function(c){
   if(Number(c.end)<lo||Number(c.start)>hi)return;
-  const x1=scale.map(c.start),x2=scale.map(c.end);
-  const cue="#000000";
-  const interior=c.color||"#66758b";
-  if(false){
-   // Forme ondulée fermée : seule son aire intérieure est teintée.
-   // Le reste du rectangle garde son fond neutre.
-   let d="M"+x1.toFixed(2)+" "+top+" ";
-   for(let k=0;k<=40;k++){const x=x1+(x2-x1)*k/40,y=top+Math.sin(k/40*Math.PI*8)*4;d+="L"+x.toFixed(2)+" "+y.toFixed(2)+" "}
-   d+="L"+x2.toFixed(2)+" "+(top+bh)+" ";
-   for(let k=40;k>=0;k--){const x=x1+(x2-x1)*k/40,y=top+bh+Math.sin(k/40*Math.PI*8)*4;d+="L"+x.toFixed(2)+" "+y.toFixed(2)+" "}
-   d+="Z";
-   out.push('<path d="'+d+'" fill="'+escapeHtml(cue)+'" fill-opacity=".28" stroke="'+escapeHtml(cue)+'" stroke-width="1.6" pointer-events="none"/>');
-   // Les bords latéraux restent ondulés.
-   [x1,x2].forEach(function(x,side){let edge="";for(let k=0;k<=20;k++){const y=top+bh*k/20,xx=x+Math.sin(k/20*Math.PI*4)*4;edge+=(k===0?"M":" L")+xx.toFixed(2)+" "+y.toFixed(2)}out.push('<path d="'+edge+'" fill="none" stroke="'+escapeHtml(cue)+'" stroke-width="2.2"/>')});
-  }else{
-    // Fond légèrement teinté sous les bords pointillés.
-    out.push('<rect x="'+x1+'" y="'+top+'" width="'+Math.max(0,x2-x1)+'" height="'+bh+'" fill="'+escapeHtml(interior)+'" fill-opacity="1" pointer-events="none"/>');
-   const dash='stroke="'+escapeHtml(cue)+'" stroke-width="2.5" stroke-dasharray="3 5" fill="none"';
-   out.push(line(x1,top,x2,top,dash));
-   out.push(line(x1,top+bh,x2,top+bh,dash));
-   out.push(line(x1,top,x1,top+bh,dash));
-   out.push(line(x2,top,x2,top+bh,dash));
+  const cx1=scale.map(c.start),cx2=scale.map(c.end);
+  out.push('<rect x="'+cx1+'" y="'+top+'" width="'+Math.max(0,cx2-cx1)+'" height="'+bh+'" fill="'+escapeHtml(c.color||"#66758b")+'" pointer-events="none"/>');
+  const dash='stroke="#000000" stroke-width="2.5" stroke-dasharray="3 5" fill="none"';
+  out.push(line(cx1,top,cx2,top,dash),line(cx1,top+bh,cx2,top+bh,dash),line(cx1,top,cx1,top+bh,dash),line(cx2,top,cx2,top+bh,dash));
+  if(cx2-cx1>58){
+   const cx=(cx1+cx2)/2,half=22,notch=10,ys=[0,.28,.43,.58,.73,1].map(function(k){return top+bh*k});
+   const left=[cx-half,cx-half+notch,cx-half,cx-half+notch,cx-half,cx-half+notch];
+   let d="M"+left[0]+" "+ys[0];
+   for(let k=1;k<6;k++)d+=" L"+left[k]+" "+ys[k];
+   for(let k=5;k>=0;k--)d+=" L"+(left[k]+2*half-notch)+" "+ys[k];
+   out.push('<path d="'+d+' Z" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" pointer-events="none"/>');
   }
-   // Cassure blanche en zigzag pour signaler qu'une durée est condensée.
-   // Le titre est dessiné après cette forme afin de rester toujours au premier plan.
-   if(x2-x1>58){
-    const cx=(x1+x2)/2,half=22,notch=10;
-    const d="M"+(cx-half)+" "+top+
-      " L"+(cx-half+notch)+" "+(top+bh*0.28)+
-      " L"+(cx-half)+" "+(top+bh*0.43)+
-      " L"+(cx-half+notch)+" "+(top+bh*0.58)+
-      " L"+(cx-half)+" "+(top+bh*0.73)+
-      " L"+(cx-half+notch)+" "+(top+bh)+
-      " L"+(cx+half)+" "+(top+bh)+
-      " L"+(cx+half-notch)+" "+(top+bh*0.73)+
-      " L"+(cx+half)+" "+(top+bh*0.58)+
-      " L"+(cx+half-notch)+" "+(top+bh*0.43)+
-      " L"+(cx+half)+" "+(top+bh*0.28)+
-      " L"+(cx+half-notch)+" "+top+" Z";
-    out.push('<path d="'+d+'" fill="#ffffff" stroke="#ffffff" stroke-width="1.5" pointer-events="none"/>');
-   }
-   if(x2-x1>8){
-    const mid=(x1+x2)/2;
-    const label=(c.name||"Temps condensé").trim();
-    if(label&&!worksheetMode){const fs=(x2-x1)<100?9:(x2-x1)<160?10:13;out.push(text(mid,top+bh/2+4,escapeHtml(label.toUpperCase()),'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" letter-spacing=".1" pointer-events="none"'));}
-    if(x2-x1>85)out.push(text(mid,top+bh+54,"··· durée condensée",'text-anchor="middle" font-size="9" fill="#848b98"'));
-   }
-  });
- // Repère rouge dessiné au premier plan afin qu’il traverse aussi les zones condensées et colorées.
- if(lo<=-1&&hi>=1){const birthX=(scale.map(-1)+scale.map(1))/2;out.push(line(birthX,top,birthX,top+bh+10,'stroke="#ef4036" stroke-width="2.1" pointer-events="none"'));}
- // Redessiner les pastilles des événements au tout premier plan : les bordures des temps condensés ne doivent jamais les recouvrir.
- state.events.forEach(function(e){
-  const year=Number(e.date);if(!Number.isFinite(year)||year<lo||year>hi)return;
-  const x=scale.map(year),y=e.position==="bottom"?top+bh:top;
-  out.push('<circle cx="'+x+'" cy="'+y+'" r="5.4" fill="#ef4036" stroke="#fff" stroke-width="1.7" data-event-dot="'+escapeHtml(e.id)+'" style="cursor:grab"/>');
+  if(cx2-cx1>8&&!worksheetMode){
+   const cmid=(cx1+cx2)/2,label=(c.name||"Temps condensé").trim();
+   const fs=(cx2-cx1)<100?9:(cx2-cx1)<160?10:13;
+   if(label)out.push(text(cmid,mid+4,label.toUpperCase(),'text-anchor="middle" font-size="'+fs+'" font-weight="850" fill="#243248" pointer-events="none"'));
+   if(cx2-cx1>85)out.push(text(cmid,mid+20,"··· durée condensée",'text-anchor="middle" font-size="9" fill="#4f5b70" pointer-events="none"'));
+  }
  });
- out.push(text(68,H-20,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
- out.push(text(1330,H-20,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
- // Pointe triangulaire parfaitement symétrique, gris pâle comme la bande vierge.
- // La base du triangle rejoint exactement le bord droit de la frise.
- const arrowTip=scale.x1, arrowBase=scale.x1-44, arrowMid=top+bh/2;
-  const endPeriod=state.periods.find(function(p){return Number(p.start)<hi&&Number(p.end)>=hi;});
-  if(!endPeriod){out.push('<path d="M'+arrowBase+' '+top+' L'+arrowTip+' '+arrowMid+' L'+arrowBase+' '+(top+bh)+' Z" fill="#f0eee7" stroke="#f0eee7" stroke-width="1" stroke-linejoin="round" pointer-events="none"/>');}
+
+ // Dates (un clic les masque ou les réaffiche).
+ const hiddenTicks=state.timeline.hiddenDateTicks||[];
+ ticks.forEach(function(t){
+  const y=top+bh+29+t.lane*23,hidden=hiddenTicks.includes(String(t.y));
+  const anchor=t.x<t.w/2+8?"start":t.x>W-t.w/2-8?"end":"middle";
+  const tx=anchor==="start"?Math.max(8,t.x):anchor==="end"?Math.min(W-8,t.x):t.x;
+  if(hidden){out.push('<rect x="'+(t.x-12)+'" y="'+(y-14)+'" width="24" height="20" fill="transparent" data-date-tick="'+t.y+'" style="cursor:pointer"/>');return}
+  out.push(line(t.x,top+bh,t.x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'));
+  out.push(line(t.x,top+bh+15,t.x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
+  out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+t.y+'" style="cursor:pointer">'+escapeHtml(t.label)+'</text>');
+ });
+
+ // Traits de rappel d'abord, puis les étiquettes par-dessus.
+ const labelItems=topItems.concat(bottomItems);
+ labelItems.forEach(function(it){
+  const isBottom=bottomItems.includes(it);
+  const y1=isBottom?top+bh:top,y2=isBottom?it.y:it.y+it.h;
+  out.push(line(it.x,y1,it.x,y2,it.kind==="birth"?'stroke="#ef4036" stroke-width="2.1"':'stroke="#8993a3" stroke-width="1.1"'));
+ });
+ labelItems.forEach(function(it){
+  const y=it.y;
+  if(it.kind==="birth"){
+   const bx=it.bx,cx=bx+96;
+   out.push('<rect x="'+bx+'" y="'+y+'" width="192" height="42" rx="7" fill="#fff5f3" stroke="#ffd0ca" data-birth-label="true" style="cursor:grab"/>');
+   if(!worksheetMode){
+    out.push(text(cx,y+16,"NAISSANCE DE JÉSUS",'text-anchor="middle" font-size="13" font-weight="900" fill="#ef4036" data-birth-label="true" style="cursor:grab"'));
+    out.push(text(cx,y+32,"passage av. / ap. J.-C.",'text-anchor="middle" font-size="11" font-weight="700" fill="#a65a55" data-birth-label="true" style="cursor:grab"'));
+   }
+   return;
+  }
+  const e=it.e,bx=it.bx,color=escapeHtml(e.textColor||"#202d43"),id=escapeHtml(e.id);
+  out.push('<rect x="'+bx+'" y="'+y+'" width="'+it.w+'" height="'+it.h+'" rx="6" fill="#fff" stroke="#e5e4de"/>');
+  if(e.image){
+   const ix=bx+8,iy=y+6,iw=it.w-16,ih=62;
+   out.push('<image href="'+escapeHtml(e.image)+'" x="'+ix+'" y="'+iy+'" width="'+iw+'" height="'+ih+'" preserveAspectRatio="xMidYMid meet"/>');
+   out.push('<path d="'+imageCorners(ix,iy,iw,ih)+'" fill="#fff" pointer-events="none"/>');
+  }
+  if(!worksheetMode){
+   out.push(text(bx+it.w/2,y+(e.image?83:16),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+color+'"'));
+   out.push(text(bx+it.w/2,y+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'"'));
+  }
+  out.push('<rect x="'+bx+'" y="'+y+'" width="'+it.w+'" height="'+it.h+'" rx="6" fill="transparent" data-event-label="'+id+'" style="cursor:grab;pointer-events:all"/>');
+ });
+
+ // Repère rouge au premier plan, puis pastilles des événements.
+ if(showBirth)out.push(line(birthX,top,birthX,top+bh+(birthBottom?0:10),'stroke="#ef4036" stroke-width="2.1" pointer-events="none"'));
+ labelItems.forEach(function(it){
+  if(it.kind!=="event")return;
+  out.push('<circle cx="'+it.x+'" cy="'+(it.e.position==="bottom"?top+bh:top)+'" r="5.4" fill="#ef4036" stroke="#fff" stroke-width="1.7" data-event-dot="'+escapeHtml(it.e.id)+'" style="cursor:pointer"/>');
+ });
+ out.push(text(68,H-18,"AVANT NOTRE ÈRE",'font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
+ out.push(text(1330,H-18,"APRÈS NOTRE ÈRE",'text-anchor="end" font-size="9" font-weight="800" fill="#9ba1ab" letter-spacing="1.2"'));
+
  svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.innerHTML=out.join("");
+ if(dragPreview)svg.appendChild(dragPreview);
  svg.setAttribute("aria-label",state.timeline.title+" : de "+fmtYear(lo,true)+" à "+fmtYear(hi,true))
 }
 function selectItem(type,id){selected={type:type,id:id};renderLists();renderEditor();document.getElementById("editorPanel").scrollIntoView({behavior:"smooth",block:"nearest"})}
+// Année située à une fraction donnée de la frise (jamais l'année 0).
+function yearAt(fraction){
+ const lo=histOrd(state.timeline.start),hi=histOrd(state.timeline.end);
+ const o=Math.round(lo+(hi-lo)*fraction);return o<=0?o-1:o
+}
 function addItem(type){
  if(type==="period"){
-  const item={id:uid(),name:"Nouvelle période",start:-3500,end:476,color:lastSelectedColor};
+  const item={id:uid(),name:"Nouvelle période",start:yearAt(.3),end:yearAt(.55),color:lastSelectedColor};
   state.periods.push(item);selected={type:"period",id:item.id}
  }else if(type==="event"){
-  const item={id:uid(),title:"Nouvel événement",date:800,description:"",position:"top",textColor:"#344158"};state.events.push(item);selected={type:"event",id:item.id}
+  const item={id:uid(),title:"Nouvel événement",date:yearAt(.5),description:"",position:"top",textColor:"#344158"};state.events.push(item);selected={type:"event",id:item.id}
  }else{
-  const item={id:uid(),name:"Temps condensé",start:-100000,end:-10000,style:"dotted",color:"#66758b",weight:28};state.compressions.push(item);selected={type:"break",id:item.id}
+  const item={id:uid(),name:"Temps condensé",start:yearAt(.1),end:yearAt(.25),style:"dotted",color:"#66758b",weight:28};state.compressions.push(item);selected={type:"break",id:item.id}
  }
  renderLists();renderEditor();renderSvg();saveState();document.getElementById("editorPanel").scrollIntoView({behavior:"smooth",block:"nearest"});toast("Élément ajouté. Modifie ses propriétés puis enregistre.")
 }
@@ -601,53 +618,55 @@ function downloadBlob(blob,name){
 function exportJson(){
  const data=JSON.stringify(state,null,2);downloadBlob(new Blob([data],{type:"application/json;charset=utf-8"}),projectFilename("json"));toast("Projet JSON exporté.")
 }
-function readSvg(){
+// Sérialise la frise affichée à sa taille réelle ; « extraH » et « extra » permettent d'ajouter du contenu sous la frise.
+function readSvg(extraH,extra){
  const original=document.getElementById("timelineSvg"),clone=original.cloneNode(true);
- clone.setAttribute("xmlns","http://www.w3.org/2000/svg");clone.setAttribute("width","1400");clone.setAttribute("height","420");
+ const preview=clone.querySelector("#dragYearPreview");if(preview)preview.remove();
+ const h=layout.H+(extraH||0);
+ clone.setAttribute("xmlns","http://www.w3.org/2000/svg");clone.setAttribute("width",String(W));clone.setAttribute("height",String(h));clone.setAttribute("viewBox","0 0 "+W+" "+h);
+ clone.removeAttribute("class");clone.removeAttribute("style");
  const style=document.createElementNS("http://www.w3.org/2000/svg","style");style.textContent='text{font-family:Inter,Arial,sans-serif}';clone.insertBefore(style,clone.firstChild);
- return new XMLSerializer().serializeToString(clone)
+ if(extra)clone.insertAdjacentHTML("beforeend",extra);
+ return {raw:new XMLSerializer().serializeToString(clone),height:h}
 }
-function shuffled(items){return items.slice().sort(function(){return Math.random()-.5})}
-function exportBlankWorksheet(){
- const originalState=JSON.parse(JSON.stringify(state));
- let raw="";
- try{
-  worksheetMode=true;renderSvg();raw=readSvg();
- }finally{
-  worksheetMode=false;state=originalState;refresh();
- }
- const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
- const eventNames=shuffled(state.events.map(function(e){return e.title}));
- const eventDates=shuffled(state.events.map(function(e){return fmtYear(e.date,true)}));
- const cols=[{title:"LISTE 1 — PÉRIODES ET TEMPS CONDENSÉS",items:periods},{title:"LISTE 2 — ÉVÉNEMENTS",items:eventNames},{title:"LISTE 3 — DATES",items:eventDates}];
- const xPositions=[35,500,965],colWidth=400,rowHeight=22,baseY=470;
- let extra='<rect x="0" y="430" width="1400" height="470" fill="#ffffff"/><text x="35" y="458" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#202d43">AIDE POUR COMPLÉTER LA FRISE</text>';
- cols.forEach(function(col,idx){
-  const x=xPositions[idx];extra+='<text x="'+x+'" y="'+(baseY+24)+'" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#202d43">'+escapeHtml(col.title)+'</text>';
-  col.items.forEach(function(item,j){
-   const y=baseY+52+j*rowHeight;
-   if(y<880)extra+='<text x="'+x+'" y="'+y+'" font-family="Arial,sans-serif" font-size="12" fill="#202d43">'+(j+1)+'. '+escapeHtml(item)+'</text>';
-  });
- });
- raw=raw.replace(/height="420"/,'height="920"').replace(/viewBox="0 0 1400 420"/,'viewBox="0 0 1400 920"').replace('</svg>',extra+'</svg>');
- const blob=new Blob([raw],{type:"image/svg+xml;charset=utf-8"});
- const url=URL.createObjectURL(blob),img=new Image();
- img.onload=function(){try{const canvas=document.createElement("canvas");canvas.width=2800;canvas.height=1840;const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);canvas.toBlob(function(png){URL.revokeObjectURL(url);if(png){downloadBlob(png,projectFilename("fiche-vierge.png"));toast("Fiche vierge élèves exportée.")}else toast("Export impossible.",true)},"image/png")}catch(e){URL.revokeObjectURL(url);toast("Export impossible.",true)}};
- img.onerror=function(){URL.revokeObjectURL(url);toast("Impossible de générer la fiche vierge.",true)};img.src=url;
-}
-function exportSvg(){const raw=readSvg();downloadBlob(new Blob([raw],{type:"image/svg+xml;charset=utf-8"}),projectFilename("svg"));toast("Frise SVG exportée.")}
-function exportPng(){
- const raw=readSvg(),blob=new Blob([raw],{type:"image/svg+xml;charset=utf-8"}),url=URL.createObjectURL(blob),img=new Image();
+// Mélange de Fisher-Yates (le tri aléatoire par sort() est biaisé).
+function shuffled(items){const a=items.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
+function svgToPng(svgData,filename,okMessage){
+ const blob=new Blob([svgData.raw],{type:"image/svg+xml;charset=utf-8"}),url=URL.createObjectURL(blob),img=new Image();
  img.onload=function(){
   try{
-   const canvas=document.createElement("canvas");canvas.width=2800;canvas.height=840;
+   const canvas=document.createElement("canvas");canvas.width=W*2;canvas.height=svgData.height*2;
    const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
-   canvas.toBlob(function(png){URL.revokeObjectURL(url);if(png){downloadBlob(png,projectFilename("png"));toast("Frise PNG haute résolution exportée.")}else toast("Impossible de générer le PNG.",true)},"image/png")
+   canvas.toBlob(function(png){URL.revokeObjectURL(url);if(png){downloadBlob(png,filename);toast(okMessage)}else toast("Impossible de générer le PNG.",true)},"image/png")
   }catch(e){URL.revokeObjectURL(url);toast("L'export PNG a échoué. Essaie l'export SVG.",true)}
  };
  img.onerror=function(){URL.revokeObjectURL(url);toast("Impossible de convertir la frise en PNG.",true)};
  img.src=url
 }
+function exportBlankWorksheet(){
+ const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
+ const eventNames=shuffled(state.events.map(function(e){return e.title}));
+ const eventDates=shuffled(state.events.map(function(e){return fmtYear(e.date,true)}));
+ const cols=[{title:"LISTE 1 — PÉRIODES ET TEMPS CONDENSÉS",items:periods},{title:"LISTE 2 — ÉVÉNEMENTS",items:eventNames},{title:"LISTE 3 — DATES",items:eventDates}];
+ const rows=Math.max(1,periods.length,eventNames.length,eventDates.length),rowHeight=22;
+ let data;
+ try{
+  worksheetMode=true;renderSvg();
+  const y0=layout.H,extraH=90+rows*rowHeight+30;
+  let extra='<rect x="0" y="'+y0+'" width="'+W+'" height="'+extraH+'" fill="#ffffff"/><line x1="35" y1="'+(y0+8)+'" x2="'+(W-35)+'" y2="'+(y0+8)+'" stroke="#e5e4de"/><text x="35" y="'+(y0+40)+'" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#202d43">AIDE POUR COMPLÉTER LA FRISE</text>';
+  cols.forEach(function(col,idx){
+   const x=[35,500,965][idx];
+   extra+='<text x="'+x+'" y="'+(y0+70)+'" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#202d43">'+escapeHtml(col.title)+'</text>';
+   col.items.forEach(function(item,j){extra+='<text x="'+x+'" y="'+(y0+98+j*rowHeight)+'" font-family="Arial,sans-serif" font-size="12" fill="#202d43">'+(j+1)+'. '+escapeHtml(item)+'</text>'});
+  });
+  data=readSvg(extraH,extra);
+ }finally{
+  worksheetMode=false;renderSvg();
+ }
+ svgToPng(data,projectFilename("fiche-vierge.png"),"Fiche vierge élèves exportée.")
+}
+function exportSvg(){downloadBlob(new Blob([readSvg().raw],{type:"image/svg+xml;charset=utf-8"}),projectFilename("svg"));toast("Frise SVG exportée.")}
+function exportPng(){svgToPng(readSvg(),projectFilename("png"),"Frise PNG haute résolution exportée.")}
 function validateImport(v){
  if(!v||!v.timeline||!Array.isArray(v.periods)||!Array.isArray(v.events)||!Array.isArray(v.compressions))throw new Error("Le fichier ne correspond pas à un projet Frise Studio.");
  const s=Number(v.timeline.start),e=Number(v.timeline.end);
@@ -666,14 +685,34 @@ document.getElementById("editorContent").addEventListener("change",function(ev){
  if(el.id!=="itemImage")return;
  const file=el.files&&el.files[0];if(!file)return;
  if(!file.type.startsWith("image/")){toast("Choisis un fichier image.",true);el.value="";return}
- if(file.size>5*1024*1024){toast("L’image dépasse 5 Mo. Choisis un fichier plus léger.",true);el.value="";return}
+ if(file.size>15*1024*1024){toast("L’image dépasse 15 Mo. Choisis un fichier plus léger.",true);el.value="";return}
  const form=el.closest("#itemForm");if(!form)return;
  const item=state.events.find(function(x){return String(x.id)===String(form.dataset.id)});if(!item)return;
- const reader=new FileReader();
- reader.onload=function(){item.image=String(reader.result);renderEditor();renderSvg();saveState();toast("Image ajoutée à l’événement.")};
- reader.onerror=function(){toast("Impossible de lire cette image.",true)};
- reader.readAsDataURL(file);
+ resizeImage(file).then(function(dataUrl){item.image=dataUrl;renderEditor();renderSvg();saveState();toast("Image ajoutée à l’événement.")},function(){el.value="";toast("Impossible de lire cette image.",true)});
 });
+// Réduit l'image (640 px max) avant de l'enregistrer : une photo brute en base64 dépasserait le quota du stockage local.
+function resizeImage(file){
+ return new Promise(function(resolve,reject){
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=function(){
+   try{
+    const max=640;let w=img.naturalWidth||max,h=img.naturalHeight||max;
+    const r=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*r));h=Math.max(1,Math.round(h*r));
+    const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext("2d");
+    const transparent=/png|gif|webp|svg/.test(file.type);
+    if(!transparent){ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h)}
+    ctx.drawImage(img,0,0,w,h);
+    let data=transparent?canvas.toDataURL("image/png"):canvas.toDataURL("image/jpeg",0.85);
+    // PNG trop lourd (photo enregistrée en PNG, par exemple) : repli en JPEG sur fond blanc.
+    if(data.length>600000){ctx.globalCompositeOperation="destination-over";ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);data=canvas.toDataURL("image/jpeg",0.82)}
+    URL.revokeObjectURL(url);resolve(data);
+   }catch(e){URL.revokeObjectURL(url);reject(e)}
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);reject(new Error("image illisible"))};
+  img.src=url;
+ })
+}
 document.getElementById("editorContent").addEventListener("click",function(ev){
  const btn=ev.target.closest("#removeEventImageBtn");if(!btn)return;
  const form=btn.closest("#itemForm");if(!form)return;
@@ -712,116 +751,104 @@ document.getElementById("editorContent").addEventListener("click",function(ev){c
  }
  renderSvg();renderLists();saveState();
 });
-// Click the empty timeline band to create an event at that date. Drag a date marker to reposition it.
+// Interactions sur la frise : glisser une étiquette verticalement, cliquer pour sélectionner, cliquer une date pour la masquer.
 const timelineSvg=document.getElementById("timelineSvg");
-let activeDrag=null, suppressTimelineClick=false;
+let activeDrag=null,suppressTimelineClick=false;
+dragPreview=document.createElementNS("http://www.w3.org/2000/svg","g");
+dragPreview.setAttribute("id","dragYearPreview");
+dragPreview.setAttribute("pointer-events","none");
+dragPreview.setAttribute("display","none");
+timelineSvg.appendChild(dragPreview);
 function svgPoint(evt){
  const pt=timelineSvg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;
  const matrix=timelineSvg.getScreenCTM();if(!matrix)return null;
  return pt.matrixTransform(matrix.inverse())
 }
+function inBand(pt){return !!pt&&pt.y>=layout.top&&pt.y<=layout.top+layout.bh}
 function inverseScale(x){
  const scale=getScale(),segments=scale.intervals;
- if(x<=scale.x0)return Number(state.timeline.start);
+ if(!segments||x<=scale.x0)return Number(state.timeline.start);
  if(x>=scale.x1)return Number(state.timeline.end);
  const seg=segments.find(function(s){return x>=s.x0&&x<=s.x1})||segments[segments.length-1];
  const ratio=(x-seg.x0)/(seg.x1-seg.x0||1);
- let ordinal=seg.oa+ratio*(seg.ob-seg.oa);
- let year=Math.round(ordinal);
- if(year===0)year=ordinal<1? -1:1;
+ const ordinal=seg.oa+ratio*(seg.ob-seg.oa);
+ // Ordinal 0 = 1 av. J.-C. ; ordinal n > 0 = n ap. J.-C. ; ordinal n < 0 = (n-1) av. J.-C.
+ const o=Math.round(ordinal),year=o<=0?o-1:o;
  return Math.max(Number(state.timeline.start),Math.min(Number(state.timeline.end),year))
 }
 timelineSvg.addEventListener("pointerdown",function(e){
- const label=e.target.closest("[data-event-label]");
- const birth=e.target.closest("[data-birth-label]");
+ const label=e.target.closest("[data-event-label]"),birth=e.target.closest("[data-birth-label]");
  if(!label&&!birth)return;
  const point=svgPoint(e);if(!point)return;
+ const box=(label||birth).getBBox();
  if(birth){
-  const birthBox=birth.getBBox();
-  activeDrag={kind:"birthLabel",startY:point.y,startOffset:Number(state.timeline.birthLabelOffsetY)||0,originX:birthBox.x+birthBox.width/2,originY:birthBox.y+birthBox.height/2};
+  activeDrag={kind:"birthLabel",startY:point.y,startOffset:Number(state.timeline.birthLabelOffsetY)||0,originX:box.x+box.width/2,originY:box.y+box.height/2};
   dragPreview.innerHTML='<rect x="-96" y="-21" width="192" height="42" rx="7" fill="#fff5f3" stroke="#ef4036" stroke-width="1.5" opacity=".9"/><text x="0" y="-2" text-anchor="middle" font-size="12" font-weight="900" fill="#ef4036">NAISSANCE DE JÉSUS</text><text x="0" y="13" text-anchor="middle" font-size="10" font-weight="700" fill="#a65a55">passage av. / ap. J.-C.</text>';
  }else{
   const item=state.events.find(function(v){return v.id===label.getAttribute("data-event-label")});
   if(!item)return;
-  const labelBox=label.getBBox();
-  activeDrag={kind:"label",id:item.id,startY:point.y,startOffset:Number(item.labelOffsetY)||0,originX:labelBox.x+labelBox.width/2,originY:labelBox.y+labelBox.height/2};
+  activeDrag={kind:"label",id:item.id,startY:point.y,startOffset:Number(item.labelOffsetY)||0,originX:box.x+box.width/2,originY:box.y+box.height/2};
   dragPreview.innerHTML='<rect x="-90" y="-22" width="180" height="40" rx="7" fill="#fff" stroke="#8993a3" stroke-width="1.5" opacity=".94"/><text x="0" y="-5" text-anchor="middle" font-size="11" font-weight="800" fill="#202d43">'+escapeHtml(item.title)+'</text><text x="0" y="10" text-anchor="middle" font-size="10" font-weight="700" fill="#202d43">'+escapeHtml(fmtYear(item.date,true))+'</text>';
  }
+ activeDrag.moved=false;
  timelineSvg.setPointerCapture(e.pointerId);e.preventDefault();
 });
-const dragPreview=document.createElementNS("http://www.w3.org/2000/svg","g");
-dragPreview.setAttribute("id","dragYearPreview");
-dragPreview.setAttribute("pointer-events","none");
-dragPreview.setAttribute("display","none");
-dragPreview.innerHTML='<rect x="-70" y="-24" width="140" height="34" rx="7" fill="#18263d" opacity=".96"/><text x="0" y="-3" text-anchor="middle" font-size="12" font-weight="800" fill="#fff"></text>';
-timelineSvg.appendChild(dragPreview);
 timelineSvg.addEventListener("pointermove",function(e){
- const target=e.target;
- const hoverPt=svgPoint(e);
- let pointer=!!(target.closest("[data-event-label]")||target.closest("[data-event-dot]")||target.closest("[data-period-handle]"));
- if(!pointer&&hoverPt&&hoverPt.y>=178&&hoverPt.y<=258){
-  const yr=inverseScale(hoverPt.x);
-  pointer=state.periods.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr})||state.compressions.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr});
+ const pt=svgPoint(e);
+ if(!activeDrag){
+  const t=e.target;let cursor="default";
+  if(t.closest("[data-event-label]")||t.closest("[data-birth-label]"))cursor="grab";
+  else if(t.closest("[data-event-dot]")||t.closest("[data-date-tick]"))cursor="pointer";
+  else if(inBand(pt)){
+   const yr=inverseScale(pt.x);
+   if(state.periods.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr})||state.compressions.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr}))cursor="pointer";
+  }
+  timelineSvg.style.cursor=cursor;return;
  }
- timelineSvg.style.cursor=pointer?"grab":"default";
- if(!activeDrag)return;
- const pt=svgPoint(e);if(!pt)return;
- if(activeDrag.kind==="label"||activeDrag.kind==="birthLabel"){
-  const deltaY=pt.y-activeDrag.startY;
-  dragPreview.setAttribute("transform","translate("+activeDrag.originX+" "+Math.max(24,Math.min(410,activeDrag.originY+deltaY))+")");
-  dragPreview.setAttribute("display","inline");
-  return;
- }
- const yr=inverseScale(pt.x),label=dragPreview.querySelector("text");
- label.textContent=fmtYear(yr,true);
- dragPreview.setAttribute("transform","translate("+Math.max(76,Math.min(1324,pt.x))+" "+Math.max(30,Math.min(390,pt.y-16))+")");
+ if(!pt)return;
+ if(Math.abs(pt.y-activeDrag.startY)>3)activeDrag.moved=true;
+ if(!activeDrag.moved)return;
+ timelineSvg.style.cursor="grabbing";
+ dragPreview.setAttribute("transform","translate("+activeDrag.originX+" "+Math.max(24,Math.min(layout.H-24,activeDrag.originY+pt.y-activeDrag.startY))+")");
  dragPreview.setAttribute("display","inline");
- const line=dragPreview.querySelector("line");
 });
-
+function endDrag(){activeDrag=null;dragPreview.setAttribute("display","none");timelineSvg.style.cursor="default"}
+timelineSvg.addEventListener("pointercancel",endDrag);
 timelineSvg.addEventListener("pointerup",function(e){
  if(!activeDrag)return;
- const drag=activeDrag;activeDrag=null;suppressTimelineClick=true;dragPreview.setAttribute("display","none");
- const pt=svgPoint(e);if(!pt)return;
- if(drag.kind==="label"){
-  const item=state.events.find(function(v){return v.id===drag.id});
-  if(item){item.labelOffsetY=Math.max(-150,Math.min(150,drag.startOffset+(pt.y-drag.startY)));selected={type:"event",id:item.id};refresh();}
+ const drag=activeDrag;endDrag();
+ // La capture du pointeur détourne le « click » vers le SVG : le simple clic est donc traité ici.
+ suppressTimelineClick=true;setTimeout(function(){suppressTimelineClick=false},0);
+ if(!drag.moved){
+  if(drag.kind==="label"){selectItem("event",drag.id);toast("Événement sélectionné : personnalise-le dans le panneau.")}
   return;
  }
- if(drag.kind==="birthLabel"){
-  state.timeline.birthLabelOffsetY=Math.max(-150,Math.min(150,drag.startOffset+(pt.y-drag.startY)));
-  renderSvg();saveState();toast("Étiquette de naissance de Jésus déplacée.");return;
- }
- const year=inverseScale(pt.x);
- if(drag.kind==="event"){
-  const item=state.events.find(function(v){return v.id===drag.id});if(item){item.date=year;selected={type:"event",id:item.id};refresh();toast("Date de l’événement déplacée.")}
- }else if(drag.kind==="period"){
-  const item=state.periods.find(function(v){return v.id===drag.id});if(!item)return;
-  if(drag.edge==="start")item.start=Math.min(year,Number(item.end)-1);
-  else item.end=Math.max(year,Number(item.start)+1);
-  if(item.start===0)item.start=-1;if(item.end===0)item.end=1;
-  selected={type:"period",id:item.id};refresh();toast("Période ajustée. Tu peux affiner les dates dans le formulaire.")
+ const pt=svgPoint(e);if(!pt)return;
+ const offset=Math.max(-150,Math.min(150,drag.startOffset+(pt.y-drag.startY)));
+ if(drag.kind==="label"){
+  const item=state.events.find(function(v){return v.id===drag.id});
+  if(item){item.labelOffsetY=offset;selected={type:"event",id:item.id};refresh()}
  }else{
-  const item=state.compressions.find(function(v){return v.id===drag.id});if(!item)return;
-  if(drag.edge==="start")item.start=Math.min(year,Number(item.end)-1);
-  else item.end=Math.max(year,Number(item.start)+1);
-  if(item.start===0)item.start=-1;if(item.end===0)item.end=1;
-  selected={type:"break",id:item.id};refresh();toast("Rupture ajustée. Tu peux affiner les dates dans le formulaire.")
+  state.timeline.birthLabelOffsetY=offset;renderSvg();saveState();toast("Étiquette de naissance de Jésus déplacée.");
  }
 });
 timelineSvg.addEventListener("click",function(e){
  if(suppressTimelineClick){suppressTimelineClick=false;return}
- if(e.target.closest("[data-date-tick]")){const tick=e.target.closest("[data-date-tick]");const year=tick.getAttribute("data-date-tick");state.timeline.hiddenDateTicks=state.timeline.hiddenDateTicks||[];const idx=state.timeline.hiddenDateTicks.indexOf(year);if(idx>=0)state.timeline.hiddenDateTicks.splice(idx,1);else state.timeline.hiddenDateTicks.push(year);renderSvg();saveState();return;}
- const eventLabel=e.target.closest("[data-event-label]");
- if(eventLabel){selected={type:"event",id:eventLabel.getAttribute("data-event-label")};renderLists();renderEditor();toast("Événement sélectionné : personnalise-le dans le panneau.");return;}
- if(e.target.closest("[data-event-dot]")||e.target.closest("[data-period-handle]"))return;
- const pt=svgPoint(e);if(!pt||pt.y<178||pt.y>258)return;
+ const tick=e.target.closest("[data-date-tick]");
+ if(tick){
+  const year=tick.getAttribute("data-date-tick");
+  const hidden=state.timeline.hiddenDateTicks=state.timeline.hiddenDateTicks||[];
+  const idx=hidden.indexOf(year);if(idx>=0)hidden.splice(idx,1);else hidden.push(year);
+  renderSvg();saveState();return;
+ }
+ const ev=e.target.closest("[data-event-label]")||e.target.closest("[data-event-dot]");
+ if(ev){selectItem("event",ev.getAttribute("data-event-label")||ev.getAttribute("data-event-dot"));toast("Événement sélectionné : personnalise-le dans le panneau.");return}
+ const pt=svgPoint(e);if(!inBand(pt))return;
  const year=inverseScale(pt.x);
- const period=state.periods.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year;});
- if(period){selected={type:"period",id:period.id};renderEditor();renderLists();toast("Période sélectionnée : personnalise-la dans le panneau.");return;}
- const compressed=state.compressions.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year;});
- if(compressed){selected={type:"break",id:compressed.id};renderEditor();renderLists();toast("Temps condensé sélectionné : personnalise-le dans le panneau.");return;}
- toast("Clique sur une période ou un temps condensé pour le personnaliser.");
+ const period=state.periods.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year});
+ if(period){selectItem("period",period.id);toast("Période sélectionnée : personnalise-la dans le panneau.");return}
+ const compressed=state.compressions.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year});
+ if(compressed){selectItem("break",compressed.id);toast("Temps condensé sélectionné : personnalise-le dans le panneau.");return}
 });
 
 document.getElementById("editorContent").addEventListener("click",function(e){
@@ -857,8 +884,8 @@ document.getElementById("addEventBtn").addEventListener("click",function(){addIt
 document.getElementById("addBreakBtn").addEventListener("click",function(){addItem("break")});
 document.getElementById("birthBtn").addEventListener("click",function(){state.timeline.birthPosition=state.timeline.birthPosition==="bottom"?"top":"bottom";renderSvg();saveState();toast("Repère de l’an 1 placé "+(state.timeline.birthPosition==="bottom"?"en-dessous":"au-dessus")+" de la frise. Reclique pour changer.")});
 document.getElementById("resetBtn").addEventListener("click",function(){
- if(!confirm("Remplacer la frise actuelle par les exemples initiaux ?"))return;
- state=examples();selected={type:"period",id:"p-pre"};refresh();toast("Exemples initiaux restaurés.")
+ if(!confirm("Effacer la frise actuelle et repartir d’une frise vierge ? Pense à exporter le projet en JSON si tu veux le garder."))return;
+ state=blankProject();selected={type:"period",id:""};refresh();toast("Nouvelle frise vierge créée.")
 });
 document.getElementById("jsonBtn").addEventListener("click",exportJson);
 document.getElementById("svgBtn").addEventListener("click",exportSvg);
@@ -870,7 +897,7 @@ document.getElementById("importBtn").addEventListener("click",function(){documen
 document.getElementById("importFile").addEventListener("change",function(e){
  const file=e.target.files&&e.target.files[0];if(!file)return;
  const reader=new FileReader();
- reader.onload=function(){try{const next=JSON.parse(String(reader.result));validateImport(next);state=next;selected={type:"period",id:state.periods[0]?.id||""};refresh();toast("Projet importé avec succès.")}catch(err){toast(err.message||"Import impossible.",true)}e.target.value=""};
+ reader.onload=function(){try{const next=JSON.parse(String(reader.result));validateImport(next);state=sanitizeProject(next);selected={type:"period",id:state.periods[0]?.id||""};refresh();toast("Projet importé avec succès.")}catch(err){toast(err.message||"Import impossible.",true)}e.target.value=""};
  reader.onerror=function(){toast("Lecture du fichier impossible.",true);e.target.value=""};reader.readAsText(file)
 });
 // Keep the title/start/end inputs visually synchronized when a project is loaded.
