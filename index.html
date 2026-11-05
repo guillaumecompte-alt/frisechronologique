@@ -557,16 +557,18 @@ function renderSvg(){
   }
  });
 
- // Dates (un clic les masque ou les réaffiche).
+ // Dates (un clic les masque ou les réaffiche). Masquées, elles restent en filigrane
+ // dans l'aperçu pour pouvoir les réactiver, mais disparaissent des exports.
  const hiddenTicks=state.timeline.hiddenDateTicks||[];
  ticks.forEach(function(t){
   const y=top+bh+29+t.lane*23,hidden=hiddenTicks.includes(String(t.y));
+  if(hidden&&worksheetMode)return;
   const anchor=t.x<t.w/2+8?"start":t.x>W-t.w/2-8?"end":"middle";
   const tx=anchor==="start"?Math.max(8,t.x):anchor==="end"?Math.min(W-8,t.x):t.x;
-  if(hidden){out.push('<rect x="'+(t.x-12)+'" y="'+(y-14)+'" width="24" height="20" fill="transparent" data-date-tick="'+t.y+'" style="cursor:pointer"/>');return}
-  out.push(line(t.x,top+bh,t.x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'));
-  out.push(line(t.x,top+bh+15,t.x,y-12,'stroke="#a0a7b2" stroke-width="1"'));
-  out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+t.y+'" style="cursor:pointer">'+escapeHtml(t.label)+'</text>');
+  const ghost=hidden?' opacity=".3" data-ghost="true"':'';
+  out.push(line(t.x,top+bh,t.x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'+ghost));
+  out.push(line(t.x,top+bh+15,t.x,y-12,'stroke="#a0a7b2" stroke-width="1"'+ghost));
+  out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+t.y+'" style="cursor:pointer"'+(hidden?ghost+' text-decoration="line-through"':'')+'><title>'+(hidden?"Cliquer pour réafficher":"Cliquer pour masquer")+'</title>'+escapeHtml(t.label)+'</text>');
  });
 
  // Traits de rappel d'abord, puis les étiquettes par-dessus.
