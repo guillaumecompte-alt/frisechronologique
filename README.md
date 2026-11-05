@@ -14,7 +14,7 @@ L'application est contenue dans un seul fichier HTML et ne nécessite ni compila
 
 - Définir le titre et les dates de début et de fin de la frise, et choisir l'affichage des dates (av./ap. J.-C. ou nombres relatifs).
 - Ajouter, modifier et supprimer des périodes : couleur pleine ou hachurée, dates.
-- Ajouter, modifier et supprimer des événements : date, description, couleur du texte, image, étiquette au-dessus ou en dessous de la frise.
+- Ajouter, modifier et supprimer des événements : date (année seule, ou date complète jour / mois / année, par exemple « 14 juillet 1789 »), description, couleur du texte, image, étiquette au-dessus ou en dessous de la frise.
 - Condenser visuellement une longue durée (bords pointillés et cassure), sans prétendre que la largeur représente toujours la durée réelle.
 - Afficher le repère « Naissance de Jésus » entre **1 av. J.-C.** et **1 apr. J.-C.**
 - Sur la frise : cliquer sur une période ou un événement pour le modifier, glisser une étiquette verticalement, cliquer sur une date pour la masquer.
@@ -25,6 +25,8 @@ L'application est contenue dans un seul fichier HTML et ne nécessite ni compila
 ## Convention chronologique
 
 Le calendrier historique usuel ne comporte pas d'année 0 : 1 av. J.-C. est immédiatement suivi de 1 apr. J.-C. L'application place donc « Naissance de Jésus » au passage entre ces deux années. Le repère est visuel et ne crée pas une année historique supplémentaire.
+
+Pour un événement, le jour et le mois sont facultatifs. Lorsqu'ils sont renseignés, l'étiquette affiche la date complète et la pastille est placée précisément dans l'année, ce qui est utile sur une frise courte (par exemple 1914-1918). Les dates impossibles (31 avril, 29 février d'une année non bissextile) sont signalées.
 
 ## Données et confidentialité
 

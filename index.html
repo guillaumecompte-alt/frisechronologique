@@ -8,7 +8,7 @@
 <title>Frise Studio — Créateur de frises chronologiques</title>
 <style>
 :root{--ink:#202d43;--muted:#697386;--paper:#f8f7f3;--surface:#fff;--line:#e5e4de;--red:#ef4036;--blue:#8cb4e2;--pink:#e6b8ba;--ochre:#cda071;--yellow:#ffd34f;--gold:#ffbd2e;--shadow:0 10px 32px rgba(32,45,67,.055);--radius:18px}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.45}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #8cb4e2;outline-offset:2px}.app-header{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:16px;position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:12px;min-width:210px}.logo{width:40px;height:40px;background:var(--red);border-radius:12px;display:grid;place-items:center;color:white;box-shadow:0 5px 14px #ef40362b}.brand strong{font-size:17px;letter-spacing:-.4px;display:block}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:1px}.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.save-status{font-size:11px;color:#518267;margin-right:7px;white-space:nowrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #deded8;background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px;font-weight:650;font-size:12px;transition:.15s ease;white-space:nowrap}.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px #202d430d;border-color:#c8c8c0}.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.primary:hover{background:#34445e}.btn.accent{background:var(--red);color:#fff;border-color:var(--red)}.btn.soft{background:#f5f4f0}.btn.danger{color:#b42318;border-color:#f0c9c5}.btn.small{padding:7px 9px;font-size:11px}.icon{font-size:15px;line-height:1}.layout{max-width:1800px;margin:0 auto;padding:24px;display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;align-items:start}.sidebar{display:flex;flex-direction:column;gap:14px}.panel,.preview-card,.intro-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.panel{padding:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:1.3px;font-weight:800;text-transform:uppercase}.section-head h2{font-size:14px;margin:0;letter-spacing:-.2px}.section-head .num{font-size:11px;color:var(--muted);background:#f1f0eb;padding:3px 7px;border-radius:6px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field:last-child{margin-bottom:0}.field label{font-size:11px;font-weight:750;color:#586276}.field input,.field select,.field textarea{width:100%;border:1px solid #deded8;border-radius:9px;background:#fff;padding:9px 10px;color:var(--ink);min-width:0}.field textarea{min-height:74px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#94a8c3;outline:none;box-shadow:0 0 0 3px #8cb4e222}.field-help{font-size:10px;color:var(--muted);line-height:1.5}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:9px}.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.action-grid .btn{white-space:normal;text-align:left;justify-content:flex-start;min-height:54px;padding:10px;font-size:11px;line-height:1.25}.action-grid .btn .icon{font-size:18px}.list-stack{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}.item-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#fff;border:1px solid transparent;border-radius:10px;padding:9px 9px;color:var(--ink)}.item-row:hover{background:#f8f7f3}.item-row.selected{border-color:#c8d6e7;background:#f2f6fb}.swatch{width:9px;height:32px;border-radius:5px;flex:0 0 auto}.item-row .item-label{min-width:0;flex:1}.item-row strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.item-row .edit-icon{color:#8a94a3;font-size:13px}.empty-list{font-size:11px;color:var(--muted);padding:10px 4px}.editor-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.palette{display:flex;gap:8px;flex-wrap:wrap}.color-choice{width:27px;height:27px;border:2px solid #fff;outline:1px solid #d5d5ce;border-radius:8px;padding:0}.color-choice.active{outline:2px solid var(--ink);outline-offset:2px}.checkrow{display:flex;align-items:center;gap:8px;font-size:11px;color:#596579;margin:10px 0}.checkrow input{accent-color:var(--ink)}.content{min-width:0;display:flex;flex-direction:column;gap:18px}.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:4px 4px 2px}.intro h1{font-size:26px;letter-spacing:-1.1px;margin:5px 0 4px;line-height:1.12}.intro p{color:var(--muted);margin:0;font-size:12px;max-width:630px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #deded8;background:#fff;padding:6px 10px;border-radius:100px;color:#596579;font-size:10px;font-weight:750;white-space:nowrap}.pill .dot{width:6px;height:6px;border-radius:50%;background:#57a879}.preview-card{overflow:hidden}.preview-toolbar{display:flex;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line);gap:12px}.preview-toolbar h2{font-size:14px;margin:0 0 3px}.preview-toolbar p{font-size:11px;color:var(--muted);margin:0}.preview-toolbar .right{display:flex;gap:8px;align-items:center}.stage{padding:12px 12px 0;overflow-x:auto;background:#fff}.timeline-svg{width:100%;min-width:720px;display:block;height:auto}.preview-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 20px;border-top:1px solid var(--line);background:#fdfdfb}.preview-foot .note{font-size:10px;color:var(--muted);max-width:670px}.preview-foot strong{color:#536276}.stats{display:flex;gap:16px;color:var(--muted);font-size:10px;white-space:nowrap}.help-card{border:1px solid #ead9c3;background:#fcf5e9;border-radius:14px;padding:15px 17px;display:flex;gap:12px;align-items:flex-start}.help-icon{background:#f4e0bf;color:#805c26;border-radius:9px;width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto}.help-card h3{margin:0 0 4px;font-size:12px}.help-card p{margin:0;color:#746346;font-size:11px;line-height:1.6}.bottom-note{text-align:center;font-size:10px;color:#9298a3;margin:0 0 8px}.hidden{display:none!important}.mobile-tools{display:none}.notice{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#202d43;color:white;padding:10px 16px;border-radius:12px;box-shadow:0 8px 28px #202d4333;font-size:12px;z-index:100;max-width:90vw}.notice.error{background:#9b2c28}.divider{border:0;border-top:1px solid var(--line);margin:15px 0}.editor-empty{border:1px dashed #d7d7d0;border-radius:10px;padding:18px 12px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.45}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #8cb4e2;outline-offset:2px}.app-header{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:16px;position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:12px;min-width:210px}.logo{width:40px;height:40px;background:var(--red);border-radius:12px;display:grid;place-items:center;color:white;box-shadow:0 5px 14px #ef40362b}.brand strong{font-size:17px;letter-spacing:-.4px;display:block}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:1px}.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.save-status{font-size:11px;color:#518267;margin-right:7px;white-space:nowrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #deded8;background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px;font-weight:650;font-size:12px;transition:.15s ease;white-space:nowrap}.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px #202d430d;border-color:#c8c8c0}.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.btn.primary:hover{background:#34445e}.btn.accent{background:var(--red);color:#fff;border-color:var(--red)}.btn.soft{background:#f5f4f0}.btn.danger{color:#b42318;border-color:#f0c9c5}.btn.small{padding:7px 9px;font-size:11px}.icon{font-size:15px;line-height:1}.layout{max-width:1800px;margin:0 auto;padding:24px;display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;align-items:start}.sidebar{display:flex;flex-direction:column;gap:14px}.panel,.preview-card,.intro-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.panel{padding:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:1.3px;font-weight:800;text-transform:uppercase}.section-head h2{font-size:14px;margin:0;letter-spacing:-.2px}.section-head .num{font-size:11px;color:var(--muted);background:#f1f0eb;padding:3px 7px;border-radius:6px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field:last-child{margin-bottom:0}.field label{font-size:11px;font-weight:750;color:#586276}.field input,.field select,.field textarea{width:100%;border:1px solid #deded8;border-radius:9px;background:#fff;padding:9px 10px;color:var(--ink);min-width:0}.field textarea{min-height:74px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#94a8c3;outline:none;box-shadow:0 0 0 3px #8cb4e222}.field-help{font-size:10px;color:var(--muted);line-height:1.5}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:9px}.date-row{display:grid;grid-template-columns:62px minmax(0,1.25fr) minmax(0,1fr);gap:7px}.date-row .field{margin-bottom:0}.date-row select:disabled{opacity:.45;cursor:not-allowed}.field-help.warn{color:#b42318;font-weight:700}.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.action-grid .btn{white-space:normal;text-align:left;justify-content:flex-start;min-height:54px;padding:10px;font-size:11px;line-height:1.25}.action-grid .btn .icon{font-size:18px}.list-stack{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}.item-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#fff;border:1px solid transparent;border-radius:10px;padding:9px 9px;color:var(--ink)}.item-row:hover{background:#f8f7f3}.item-row.selected{border-color:#c8d6e7;background:#f2f6fb}.swatch{width:9px;height:32px;border-radius:5px;flex:0 0 auto}.item-row .item-label{min-width:0;flex:1}.item-row strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.item-row .edit-icon{color:#8a94a3;font-size:13px}.empty-list{font-size:11px;color:var(--muted);padding:10px 4px}.editor-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.palette{display:flex;gap:8px;flex-wrap:wrap}.color-choice{width:27px;height:27px;border:2px solid #fff;outline:1px solid #d5d5ce;border-radius:8px;padding:0}.color-choice.active{outline:2px solid var(--ink);outline-offset:2px}.checkrow{display:flex;align-items:center;gap:8px;font-size:11px;color:#596579;margin:10px 0}.checkrow input{accent-color:var(--ink)}.content{min-width:0;display:flex;flex-direction:column;gap:18px}.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:4px 4px 2px}.intro h1{font-size:26px;letter-spacing:-1.1px;margin:5px 0 4px;line-height:1.12}.intro p{color:var(--muted);margin:0;font-size:12px;max-width:630px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #deded8;background:#fff;padding:6px 10px;border-radius:100px;color:#596579;font-size:10px;font-weight:750;white-space:nowrap}.pill .dot{width:6px;height:6px;border-radius:50%;background:#57a879}.preview-card{overflow:hidden}.preview-toolbar{display:flex;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line);gap:12px}.preview-toolbar h2{font-size:14px;margin:0 0 3px}.preview-toolbar p{font-size:11px;color:var(--muted);margin:0}.preview-toolbar .right{display:flex;gap:8px;align-items:center}.stage{padding:12px 12px 0;overflow-x:auto;background:#fff}.timeline-svg{width:100%;min-width:720px;display:block;height:auto}.preview-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 20px;border-top:1px solid var(--line);background:#fdfdfb}.preview-foot .note{font-size:10px;color:var(--muted);max-width:670px}.preview-foot strong{color:#536276}.stats{display:flex;gap:16px;color:var(--muted);font-size:10px;white-space:nowrap}.help-card{border:1px solid #ead9c3;background:#fcf5e9;border-radius:14px;padding:15px 17px;display:flex;gap:12px;align-items:flex-start}.help-icon{background:#f4e0bf;color:#805c26;border-radius:9px;width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto}.help-card h3{margin:0 0 4px;font-size:12px}.help-card p{margin:0;color:#746346;font-size:11px;line-height:1.6}.bottom-note{text-align:center;font-size:10px;color:#9298a3;margin:0 0 8px}.hidden{display:none!important}.mobile-tools{display:none}.notice{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#202d43;color:white;padding:10px 16px;border-radius:12px;box-shadow:0 8px 28px #202d4333;font-size:12px;z-index:100;max-width:90vw}.notice.error{background:#9b2c28}.divider{border:0;border-top:1px solid var(--line);margin:15px 0}.editor-empty{border:1px dashed #d7d7d0;border-radius:10px;padding:18px 12px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
 @media(max-width:1100px){.layout{grid-template-columns:285px minmax(0,1fr);padding:16px;gap:15px}.app-header{padding:0 18px}.header-actions .optional{display:none}.intro h1{font-size:23px}}
 @media(max-width:800px){.app-header{height:auto;min-height:72px;padding:12px 15px;align-items:flex-start}.brand{min-width:unset}.brand small{display:none}.header-actions{gap:6px}.header-actions .save-status{display:none}.header-actions .btn{padding:8px;font-size:11px}.layout{grid-template-columns:1fr;padding:12px}.content{order:0}.sidebar{order:1;display:grid;grid-template-columns:1fr 1fr;align-items:start}.sidebar .settings-panel{grid-column:1/-1}.sidebar .editor-panel{grid-column:1/-1}.intro{align-items:flex-start}.intro h1{font-size:22px}.intro .pill{display:none}.preview-toolbar{padding:14px}.preview-foot{align-items:flex-start;flex-direction:column}.stats{flex-wrap:wrap}.list-stack{max-height:200px}}
 @media(max-width:480px){.logo{width:34px;height:34px}.brand strong{font-size:14px}.app-header{gap:8px}.header-actions .mobile-hide{display:none}.layout{padding:9px}.sidebar{display:flex}.intro h1{font-size:20px}.intro p{font-size:11px}.preview-toolbar .right .btn{padding:7px 8px}.preview-toolbar .right .optional{display:none}.stage{padding:4px 5px 0}}
@@ -189,13 +189,46 @@ let lastSelectedColor=COLORS[0].value;
 function validYear(v){return Number.isInteger(Number(v))&&Number(v)!==0&&Number.isFinite(Number(v))}
 function histOrd(y){y=Number(y);return y<0?y+1:y}
 function yearDate(y){return validYear(y)?Number(y):null}
+// Date complète facultative d'un événement : l'année (e.date) reste obligatoire, le mois (1-12) et le jour sont optionnels.
+const MONTHS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function isLeap(y){return y<0||(y%4===0&&(y<1583||y%100!==0||y%400===0))}
+function daysInMonth(m,y){return m===2?(isLeap(y)?29:28):[4,6,9,11].includes(m)?30:31}
+// Renvoie {year,month,day} ou {error}. month/day valent 0 quand ils ne sont pas renseignés.
+function checkEventDate(year,month,day){
+ year=Number(year);month=Number(month)||0;day=Number(day)||0;
+ if(!validYear(year))return {error:"Année invalide (l'année 0 n'existe pas)."};
+ if(day&&!month)return {error:"Choisis un mois pour indiquer un jour."};
+ if(month&&(month<1||month>12||!Number.isInteger(month)))return {error:"Mois invalide."};
+ if(day&&(!Number.isInteger(day)||day<1||day>daysInMonth(month,year)))return {error:"Le "+day+" "+MONTHS[month-1]+" "+Math.abs(year)+" n'existe pas."};
+ return {year:year,month:month,day:day}
+}
+function applyEventDate(item,dt){
+ item.date=dt.year;
+ if(dt.month)item.month=dt.month;else delete item.month;
+ if(dt.day)item.day=dt.day;else delete item.day;
+}
+// Texte affiché : « 14 juillet 1789 ap. J.-C. », « juillet 1789 ap. J.-C. » ou seulement l'année.
+function fmtEventDate(e){
+ const m=Number(e.month)||0,d=Number(e.day)||0;
+ if(!m)return fmtYear(e.date,true);
+ return (d?(d===1?"1er":d)+" ":"")+MONTHS[m-1]+" "+fmtYear(e.date,true)
+}
+// Position sur la frise : l'année, affinée par le mois et le jour (utile sur une frise courte, ex. 1914-1918).
+function eventPosition(e){
+ const y=Number(e.date),m=Number(e.month)||0,d=Number(e.day)||0;
+ if(!m)return y;
+ const before=[31,isLeap(y)?29:28,31,30,31,30,31,31,30,31,30,31].slice(0,m-1).reduce(function(a,b){return a+b},0);
+ const dayOfYear=before+(d?d-.5:daysInMonth(m,y)/2);
+ return y+dayOfYear/(isLeap(y)?366:365)
+}
 function fmtYear(y,short){
  y=Number(y);
  if(state&&state.timeline&&state.timeline.dateFormat==="relative")return String(y);
  if(y===0)return "Naissance de Jésus";
  if(Math.abs(y)>=1000000)return (Math.abs(y)/1000000).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Ma";
  if(Math.abs(y)>=100000)return (Math.abs(y)/1000).toLocaleString("fr-FR",{maximumFractionDigits:0})+" ka";
- const n=Math.abs(y).toLocaleString("fr-FR");
+ // Les années s'écrivent sans séparateur (1914) ; au-delà de 9999, on espace les milliers (12 000).
+ const n=Math.abs(y)<10000?String(Math.abs(y)):Math.abs(y).toLocaleString("fr-FR");
  if(y<0)return short?n+" av. J.-C.":n+" av. J.-C.";
  return short?n+" ap. J.-C.":n+" ap. J.-C.";
 }
@@ -212,7 +245,7 @@ function sanitizeProject(v){
  v.compressions.forEach(function(c){cleanId(c);c.color=safeColor(c.color,"#66758b")});
  v.timeline.title=String(v.timeline.title||"Ma frise chronologique");v.timeline.start=Number(v.timeline.start);v.timeline.end=Number(v.timeline.end);
  v.periods.forEach(function(p){p.name=String(p.name);p.start=Number(p.start);p.end=Number(p.end)});
- v.events.forEach(function(e){e.title=String(e.title);e.date=Number(e.date)});
+ v.events.forEach(function(e){e.title=String(e.title);e.date=Number(e.date);const c=checkEventDate(e.date,e.month,e.day);if(c.error||!c.month){delete e.month;delete e.day}else{e.month=c.month;if(c.day)e.day=c.day;else delete e.day}});
  v.compressions.forEach(function(c){c.start=Number(c.start);c.end=Number(c.end)});
  if(!Array.isArray(v.timeline.hiddenDateTicks))v.timeline.hiddenDateTicks=[];
  v.timeline.hiddenDateTicks=v.timeline.hiddenDateTicks.map(String);
@@ -251,7 +284,7 @@ function updateCounts(){
 function renderLists(){
  const defs=[
   {type:"period",el:"periodList",items:state.periods,title:function(i){return i.name},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color}},
-  {type:"event",el:"eventList",items:state.events,title:function(i){return i.title},sub:function(i){return fmtYear(i.date,true)},color:function(){return "#ef4036"}},
+  {type:"event",el:"eventList",items:state.events,title:function(i){return i.title},sub:function(i){return fmtEventDate(i)},color:function(){return "#ef4036"}},
   {type:"break",el:"breakList",items:state.compressions,title:function(i){return "Temps condensé"},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color||"#66758b"}}
  ];
  defs.forEach(function(d){
@@ -288,7 +321,12 @@ function renderEditor(){
   html+='<p class="field-help">Le nom apparaît à l\'intérieur de la bande colorée lorsque l\'espace le permet.</p>';
  }else if(selected.type==="event"){
   html+=field("itemName","Nom de l'événement",item.title,"text",'maxlength="120" required');
-  html+=field("itemDate","Date de l'événement",item.date,"number",'required');
+  const m=Number(item.month)||0,d=Number(item.day)||0;
+  html+='<div class="field"><label>Date de l\'événement</label><div class="date-row">'+
+   '<div class="field"><label for="itemDay">Jour</label><select id="itemDay" name="itemDay"'+(m?'':' disabled')+'><option value="">—</option>'+Array.from({length:31},function(_,i){return '<option value="'+(i+1)+'"'+(d===i+1?' selected':'')+'>'+(i+1)+'</option>'}).join("")+'</select></div>'+
+   '<div class="field"><label for="itemMonth">Mois</label><select id="itemMonth" name="itemMonth"><option value="">—</option>'+MONTHS.map(function(n,i){return '<option value="'+(i+1)+'"'+(m===i+1?' selected':'')+'>'+n+'</option>'}).join("")+'</select></div>'+
+   '<div class="field"><label for="itemDate">Année</label><input id="itemDate" name="itemDate" type="number" step="1" value="'+escapeHtml(item.date)+'" required></div>'+
+   '</div><p class="field-help" id="itemDateHelp">Jour et mois facultatifs : laisse « — » pour n\'afficher que l\'année.</p></div>';
    html+='<div class="field"><label>Couleur du texte</label><div class="palette" role="group" aria-label="Couleur du texte">'+[{name:"Noir",value:"#202d43"},{name:"Bleu",value:"#2f6db3"},{name:"Vert",value:"#27834a"},{name:"Rouge (naissance de Jésus)",value:"#ef4036"},{name:"Violet",value:"#8055a5"}].map(function(c){return '<button type="button" class="color-choice '+((item.textColor||"#202d43")===c.value?"active":"")+'" data-event-text-color="'+c.value+'" title="'+c.name+'" aria-label="Choisir la couleur '+c.name+'" style="background:'+c.value+'"></button>'}).join("")+'</div></div>';
   html+='<div class="field"><label for="itemDescription">Description (facultative)</label><textarea id="itemDescription" name="itemDescription" maxlength="500">'+escapeHtml(item.description||"")+'</textarea></div>';
   html+='<div class="field"><label for="itemImage">Image de l’événement</label><input id="itemImage" name="itemImage" type="file" accept="image/*"><p class="field-help">Choisis une image sur ton ordinateur (15 Mo maximum). Elle est réduite automatiquement puis intégrée à l’étiquette et aux exports.</p>'+(item.image?'<div class="event-image-preview"><img src="'+escapeHtml(item.image)+'" alt="Image de l’événement" style="max-width:120px;max-height:80px;display:block;margin:8px 0"><button class="btn small" type="button" id="removeEventImageBtn">Retirer l’image</button></div>':'')+'</div>';
@@ -394,7 +432,7 @@ function renderSvg(){
  const topItems=[],bottomItems=[];
  state.events.forEach(function(e){
   const d=Number(e.date);if(!Number.isFinite(d)||d<lo||d>hi)return;
-  const it={kind:"event",e:e,x:scale.map(d),w:labelWidth(e.title),h:e.image?LABEL_IMG_H:LABEL_H,offset:Number(e.labelOffsetY)||0};
+  const it={kind:"event",e:e,x:scale.map(eventPosition(e)),w:Math.max(labelWidth(e.title),labelWidth(fmtEventDate(e))),h:e.image?LABEL_IMG_H:LABEL_H,offset:Number(e.labelOffsetY)||0};
   (e.position==="bottom"?bottomItems:topItems).push(it);
  });
  if(showBirth)(birthBottom?bottomItems:topItems).push({kind:"birth",x:birthX,w:192,h:42,offset:Number(state.timeline.birthLabelOffsetY)||0});
@@ -536,7 +574,7 @@ function renderSvg(){
   }
   if(!worksheetMode){
    out.push(text(bx+it.w/2,y+(e.image?83:16),e.title,'text-anchor="middle" font-size="12" font-weight="750" fill="'+color+'"'));
-   out.push(text(bx+it.w/2,y+(e.image?99:34),fmtYear(e.date,true),'text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'"'));
+   out.push(text(bx+it.w/2,y+(e.image?99:34),fmtEventDate(e),'text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'"'));
   }
   out.push('<rect x="'+bx+'" y="'+y+'" width="'+it.w+'" height="'+it.h+'" rx="6" fill="transparent" data-event-label="'+id+'" style="cursor:grab;pointer-events:all"/>');
  });
@@ -592,9 +630,10 @@ function saveItemForm(ev){
   item.hatchBackground=value("itemHatchBackground")||item.hatchBackground||"#f4f1eb";
   const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
  }else if(type==="event"){
-  const name=value("itemName").trim(),date=Number(value("itemDate"));
-  if(!name||!validYear(date)){toast("Nom ou date invalide. L'année 0 ne peut pas être saisie.",true);return}
-  item.title=name;item.date=date;item.textColor=f.querySelector("[data-event-text-color].active")?.dataset.eventTextColor||item.textColor||"#202d43";item.description=value("itemDescription")||"";item.desc=item.description;item.position=value("itemPosition")||"top";
+  const name=value("itemName").trim(),dt=checkEventDate(value("itemDate"),value("itemMonth"),value("itemDay"));
+  if(!name){toast("Donne un nom à l'événement.",true);return}
+  if(dt.error){toast(dt.error,true);return}
+  item.title=name;applyEventDate(item,dt);item.textColor=f.querySelector("[data-event-text-color].active")?.dataset.eventTextColor||item.textColor||"#202d43";item.description=value("itemDescription")||"";item.desc=item.description;item.position=value("itemPosition")||"top";
  }else{
   const name=(value("itemName")||"").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
   if(!name){toast("Donne un nom au temps condensé.",true);return}
@@ -646,7 +685,7 @@ function svgToPng(svgData,filename,okMessage){
 function exportBlankWorksheet(){
  const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
  const eventNames=shuffled(state.events.map(function(e){return e.title}));
- const eventDates=shuffled(state.events.map(function(e){return fmtYear(e.date,true)}));
+ const eventDates=shuffled(state.events.map(function(e){return fmtEventDate(e)}));
  const cols=[{title:"LISTE 1 — PÉRIODES ET TEMPS CONDENSÉS",items:periods},{title:"LISTE 2 — ÉVÉNEMENTS",items:eventNames},{title:"LISTE 3 — DATES",items:eventDates}];
  const rows=Math.max(1,periods.length,eventNames.length,eventDates.length),rowHeight=22;
  let data;
@@ -738,7 +777,14 @@ document.getElementById("editorContent").addEventListener("click",function(ev){c
  }else if(type==="event"){
   if(el.id==="itemName")item.title=el.value;
    if(el.matches("[data-event-text-color]")){item.textColor=el.dataset.eventTextColor;form.querySelectorAll("[data-event-text-color]").forEach(function(b){b.classList.toggle("active",b===el)});}
-  if(el.id==="itemDate"&&el.value!==""&&validYear(Number(el.value)))item.date=Number(el.value);
+  if(el.id==="itemDate"||el.id==="itemMonth"||el.id==="itemDay"){
+   const daySel=document.getElementById("itemDay"),monthSel=document.getElementById("itemMonth");
+   if(!monthSel.value){daySel.value="";daySel.disabled=true}else daySel.disabled=false;
+   const dt=checkEventDate(document.getElementById("itemDate").value,monthSel.value,daySel.value);
+   const help=document.getElementById("itemDateHelp");
+   if(dt.error){help.textContent=dt.error;help.classList.add("warn")}
+   else{help.textContent="Jour et mois facultatifs : laisse « — » pour n'afficher que l'année.";help.classList.remove("warn");applyEventDate(item,dt)}
+  }
   if(el.id==="itemDescription"){item.description=el.value;item.desc=el.value}
   if(el.id==="itemPosition")item.position=el.value;
  }else{
@@ -788,7 +834,7 @@ timelineSvg.addEventListener("pointerdown",function(e){
   const item=state.events.find(function(v){return v.id===label.getAttribute("data-event-label")});
   if(!item)return;
   activeDrag={kind:"label",id:item.id,startY:point.y,startOffset:Number(item.labelOffsetY)||0,originX:box.x+box.width/2,originY:box.y+box.height/2};
-  dragPreview.innerHTML='<rect x="-90" y="-22" width="180" height="40" rx="7" fill="#fff" stroke="#8993a3" stroke-width="1.5" opacity=".94"/><text x="0" y="-5" text-anchor="middle" font-size="11" font-weight="800" fill="#202d43">'+escapeHtml(item.title)+'</text><text x="0" y="10" text-anchor="middle" font-size="10" font-weight="700" fill="#202d43">'+escapeHtml(fmtYear(item.date,true))+'</text>';
+  dragPreview.innerHTML='<rect x="-90" y="-22" width="180" height="40" rx="7" fill="#fff" stroke="#8993a3" stroke-width="1.5" opacity=".94"/><text x="0" y="-5" text-anchor="middle" font-size="11" font-weight="800" fill="#202d43">'+escapeHtml(item.title)+'</text><text x="0" y="10" text-anchor="middle" font-size="10" font-weight="700" fill="#202d43">'+escapeHtml(fmtEventDate(item))+'</text>';
  }
  activeDrag.moved=false;
  timelineSvg.setPointerCapture(e.pointerId);e.preventDefault();
