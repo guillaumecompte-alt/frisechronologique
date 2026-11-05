@@ -20,7 +20,7 @@ L'application est contenue dans un seul fichier HTML et ne nécessite ni compila
 - Sur la frise : cliquer sur une période ou un événement pour le modifier, glisser une étiquette verticalement, cliquer sur une date ou sur les mentions « Avant notre ère » / « Après notre ère » pour les masquer (un nouveau clic les réaffiche).
 - Le cadre des étiquettes s'adapte au texte : on peut passer à la ligne dans le nom d'un événement (touche Entrée), et les noms trop longs sont coupés automatiquement.
 - Les étiquettes se répartissent automatiquement sur plusieurs rangées et la frise s'agrandit pour qu'elles ne se chevauchent pas.
-- Exporter la frise en SVG ou PNG (haute résolution), exporter une **fiche vierge élèves** (textes masqués et listes mélangées à replacer), et exporter/importer le projet au format JSON.
+- Exporter la frise en SVG ou PNG (haute résolution), exporter une **fiche vierge élèves** (textes masqués), au choix avec les événements et les dates en deux listes mélangées à associer, ou avec une seule liste d'événements accompagnés de leur date, et exporter/importer le projet au format JSON.
 - Sauvegarder automatiquement le projet dans le stockage local du navigateur.
 
 ## Convention chronologique
