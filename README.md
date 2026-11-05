@@ -17,7 +17,8 @@ L'application est contenue dans un seul fichier HTML et ne nécessite ni compila
 - Ajouter, modifier et supprimer des événements : date (année seule, ou date complète jour / mois / année, par exemple « 14 juillet 1789 »), description, couleur du texte, image, étiquette au-dessus ou en dessous de la frise.
 - Condenser visuellement une longue durée (bords pointillés et cassure), sans prétendre que la largeur représente toujours la durée réelle.
 - Afficher le repère « Naissance de Jésus » entre **1 av. J.-C.** et **1 apr. J.-C.**
-- Sur la frise : cliquer sur une période ou un événement pour le modifier, glisser une étiquette verticalement, cliquer sur une date pour la masquer.
+- Sur la frise : cliquer sur une période ou un événement pour le modifier, glisser une étiquette verticalement, cliquer sur une date ou sur les mentions « Avant notre ère » / « Après notre ère » pour les masquer (un nouveau clic les réaffiche).
+- Le cadre des étiquettes s'adapte au texte : on peut passer à la ligne dans le nom d'un événement (touche Entrée), et les noms trop longs sont coupés automatiquement.
 - Les étiquettes se répartissent automatiquement sur plusieurs rangées et la frise s'agrandit pour qu'elles ne se chevauchent pas.
 - Exporter la frise en SVG ou PNG (haute résolution), exporter une **fiche vierge élèves** (textes masqués et listes mélangées à replacer), et exporter/importer le projet au format JSON.
 - Sauvegarder automatiquement le projet dans le stockage local du navigateur.
