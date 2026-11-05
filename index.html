@@ -152,7 +152,7 @@ body{
     <section class="preview-card">
       <div class="preview-toolbar">
         <div><h2>Aperçu de la frise</h2><p>Les dates et les étiquettes se mettent à jour à chaque modification.</p></div>
-        <div class="right"><button class="btn small optional" type="button" id="svgBtn2">Télécharger SVG</button><button class="btn small primary" type="button" id="pngBtn2">Télécharger PNG</button></div>
+        
       </div>
       <div class="stage" id="stage"><svg id="timelineSvg" class="timeline-svg" role="img" aria-label="Frise chronologique"></svg></div>
       <div class="preview-foot">
@@ -983,7 +983,6 @@ document.getElementById("resetBtn").addEventListener("click",function(){
 });
 document.getElementById("jsonBtn").addEventListener("click",exportJson);
 document.getElementById("svgBtn").addEventListener("click",exportSvg);
-document.getElementById("svgBtn2").addEventListener("click",exportSvg);
 document.getElementById("pngBtn").addEventListener("click",exportPng);
 // Menu de la fiche élève : deux variantes d'aide.
 const sheetBtn=document.getElementById("blankSheetBtn"),sheetMenu=document.getElementById("sheetMenu");
@@ -1000,7 +999,6 @@ sheetMenu.addEventListener("click",function(ev){
 });
 document.addEventListener("click",function(ev){if(!ev.target.closest(".sheet-menu-wrap"))closeSheetMenu()});
 document.addEventListener("keydown",function(ev){if(ev.key==="Escape"&&!sheetMenu.classList.contains("hidden")){closeSheetMenu();sheetBtn.focus()}});
-document.getElementById("pngBtn2").addEventListener("click",exportPng);
 document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click()});
 document.getElementById("importFile").addEventListener("change",function(e){
  const file=e.target.files&&e.target.files[0];if(!file)return;
