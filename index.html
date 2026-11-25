@@ -96,7 +96,7 @@ body{
       <button class="btn" id="blankSheetBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="sheetMenu">Fiche vierge élèves ▾</button>
       <div class="sheet-menu hidden" id="sheetMenu" role="menu">
         <button class="sheet-option" type="button" role="menuitem" data-sheet="split"><strong>Événements et dates à associer</strong><small>Deux listes mélangées : l’élève retrouve la date de chaque événement.</small></button>
-        <button class="sheet-option" type="button" role="menuitem" data-sheet="paired"><strong>Événements avec leur date</strong><small>Une seule liste : chaque événement est donné avec sa date.</small></button>
+        <button class="sheet-option" type="button" role="menuitem" data-sheet="timeline"><strong>Dates sur la frise</strong><small>Les dates des événements et des périodes sont écrites sur la frise ; l’élève complète le nom des événements, sans liste d’aide.</small></button>
       </div>
     </div>
     <input type="file" id="importFile" accept=".json,application/json" class="hidden">
@@ -186,6 +186,8 @@ function blankProject(){return {
  compressions:[]
 }}
 let worksheetMode=false;
+// Fiche « dates sur la frise » : les cadres d'événements gardent leur date et laissent de la place pour écrire.
+let worksheetDates=false;
 let state;
 let selected={type:"period",id:""};
 let noticeTimer=null;
@@ -506,9 +508,11 @@ function renderSvg(){
  const topItems=[],bottomItems=[];
  state.events.forEach(function(e){
   const d=Number(e.date);if(!Number.isFinite(d)||d<lo||d>hi)return;
-  const lines=wrapTitle(e.title),dateText=fmtEventDate(e);
+  // Sur la fiche « dates sur la frise », le cadre ne trahit pas la longueur du nom : deux lignes vides de taille fixe.
+  const blank=worksheetMode&&worksheetDates;
+  const lines=blank?["",""]:wrapTitle(e.title),dateText=fmtEventDate(e);
   const textW=Math.max(textWidth(dateText,12,700),Math.max.apply(null,lines.map(function(l){return textWidth(l,12,750)})));
-  const it={kind:"event",e:e,lines:lines,dateText:dateText,x:scale.map(eventPosition(e)),w:Math.ceil(Math.max(106,textW+26)),h:LABEL_H+(lines.length-1)*TITLE_LINE_H+(e.image?IMAGE_BLOCK_H:0),offset:Number(e.labelOffsetY)||0};
+  const it={kind:"event",e:e,lines:lines,dateText:dateText,x:scale.map(eventPosition(e)),w:Math.ceil(Math.max(blank?200:106,textW+26)),h:LABEL_H+(lines.length-1)*TITLE_LINE_H+(e.image?IMAGE_BLOCK_H:0),offset:Number(e.labelOffsetY)||0};
   (e.position==="bottom"?bottomItems:topItems).push(it);
  });
  if(showBirth)(birthBottom?bottomItems:topItems).push({kind:"birth",x:birthX,w:192,h:42,offset:Number(state.timeline.birthLabelOffsetY)||0});
@@ -666,6 +670,10 @@ function renderSvg(){
    const ty=y+(e.image?IMAGE_BLOCK_H:0)+16,cx=bx+it.w/2;
    out.push('<text x="'+cx+'" y="'+ty+'" text-anchor="middle" font-size="12" font-weight="750" fill="'+color+'">'+it.lines.map(function(l,i){return '<tspan x="'+cx+'" dy="'+(i?TITLE_LINE_H:0)+'">'+escapeHtml(l)+'</tspan>'}).join("")+'</text>');
    out.push(text(cx,ty+(it.lines.length-1)*TITLE_LINE_H+18,it.dateText,'text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'"'));
+  }else if(worksheetDates){
+   const ty=y+(e.image?IMAGE_BLOCK_H:0)+16,cx=bx+it.w/2,lineY=ty+(it.lines.length-1)*TITLE_LINE_H+3;
+   out.push(line(bx+12,lineY,bx+it.w-12,lineY,'stroke="#c9ccd2" stroke-width="1" stroke-dasharray="3 3"'));
+   out.push(text(cx,lineY+17,it.dateText,'text-anchor="middle" font-size="12" font-weight="700" fill="#202d43"'));
   }
   out.push('<rect x="'+bx+'" y="'+y+'" width="'+it.w+'" height="'+it.h+'" rx="6" fill="transparent" data-event-label="'+id+'" style="cursor:grab;pointer-events:all"/>');
  });
@@ -781,16 +789,18 @@ function svgToPng(svgData,filename,okMessage){
  img.src=url
 }
 // mode « split » : événements et dates en deux listes mélangées séparément (à associer).
-// mode « paired » : une seule liste d'événements, chacun suivi de sa date.
+// mode « timeline » : aucune liste ; les dates des événements et des périodes sont écrites sur la frise.
 function exportBlankWorksheet(mode){
+ if(mode==="timeline"){
+  let sheet;
+  try{worksheetMode=true;worksheetDates=true;renderSvg();sheet=readSvg()}
+  finally{worksheetMode=false;worksheetDates=false;renderSvg()}
+  svgToPng(sheet,projectFilename("fiche-vierge-dates-sur-frise.png"),"Fiche vierge élèves exportée.");return;
+ }
  const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtPeriodStart(p)+" — "+fmtPeriodEnd(p)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
  const lists=[{title:"PÉRIODES ET TEMPS CONDENSÉS",items:periods}];
- if(mode==="paired"){
-  lists.push({title:"ÉVÉNEMENTS ET LEURS DATES",items:shuffled(state.events.map(function(e){return plainTitle(e.title)+" — "+fmtEventDate(e)}))});
- }else{
-  lists.push({title:"ÉVÉNEMENTS",items:shuffled(state.events.map(function(e){return plainTitle(e.title)}))});
-  lists.push({title:"DATES",items:shuffled(state.events.map(function(e){return fmtEventDate(e)}))});
- }
+ lists.push({title:"ÉVÉNEMENTS",items:shuffled(state.events.map(function(e){return plainTitle(e.title)}))});
+ lists.push({title:"DATES",items:shuffled(state.events.map(function(e){return fmtEventDate(e)}))});
  // Les listes vides (aucune période, aucun événement) ne sont pas imprimées.
  const cols=lists.filter(function(l){return l.items.length}).map(function(l,i){return {title:"LISTE "+(i+1)+" — "+l.title,items:l.items}});
  // Chaque élément est découpé pour tenir dans sa colonne (retrait suspendu après le numéro).
@@ -826,7 +836,7 @@ function exportBlankWorksheet(mode){
  }finally{
   worksheetMode=false;renderSvg();
  }
- svgToPng(data,projectFilename(mode==="paired"?"fiche-vierge-avec-dates.png":"fiche-vierge-a-associer.png"),"Fiche vierge élèves exportée.")
+ svgToPng(data,projectFilename("fiche-vierge-a-associer.png"),"Fiche vierge élèves exportée.")
 }
 function exportSvg(){downloadBlob(new Blob([readSvg().raw],{type:"image/svg+xml;charset=utf-8"}),projectFilename("svg"));toast("Frise SVG exportée.")}
 function exportPng(){svgToPng(readSvg(),projectFilename("png"),"Frise PNG haute résolution exportée.")}
