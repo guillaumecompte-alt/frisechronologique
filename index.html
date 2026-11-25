@@ -97,7 +97,7 @@ body{
       <div class="sheet-menu hidden" id="sheetMenu" role="menu">
         <button class="sheet-option" type="button" role="menuitem" data-sheet="split"><strong>Événements et dates à associer</strong><small>Deux listes mélangées : l’élève retrouve la date de chaque événement.</small></button>
         <button class="sheet-option" type="button" role="menuitem" data-sheet="timeline"><strong>Dates sur la frise</strong><small>Les dates des événements et des périodes sont écrites sur la frise ; l’élève complète le nom des événements, sans liste d’aide.</small></button>
-        <button class="sheet-option" type="button" role="menuitem" data-sheet="timelineList"><strong>Dates sur la frise avec liste événement</strong><small>Comme « Dates sur la frise », avec en dessous la liste mélangée des événements (sans leur date) parmi lesquels l’élève choisit.</small></button>
+        <button class="sheet-option" type="button" role="menuitem" data-sheet="timelineList"><strong>Dates sur la frise avec liste événement</strong><small>Comme « Dates sur la frise », avec en dessous les listes mélangées des périodes et des événements (sans leurs dates) parmi lesquelles l’élève choisit.</small></button>
       </div>
     </div>
     <input type="file" id="importFile" accept=".json,application/json" class="hidden">
@@ -799,7 +799,8 @@ function exportBlankWorksheet(mode){
  const eventNames=shuffled(state.events.map(function(e){return plainTitle(e.title)}));
  let lists;
  if(mode==="timeline")lists=[];
- else if(mode==="timelineList")lists=[{title:"ÉVÉNEMENTS",items:eventNames}];
+ // Les dates sont déjà sur la frise : les listes ne donnent que les noms, mélangés.
+ else if(mode==="timelineList")lists=[{title:"PÉRIODES ET TEMPS CONDENSÉS",items:shuffled(state.periods.map(function(p){return p.name}).concat(state.compressions.map(function(p){return p.name||"Temps condensé"})))},{title:"ÉVÉNEMENTS",items:eventNames}];
  else lists=[{title:"PÉRIODES ET TEMPS CONDENSÉS",items:periods},{title:"ÉVÉNEMENTS",items:eventNames},{title:"DATES",items:shuffled(state.events.map(function(e){return fmtEventDate(e)}))}];
  // Les listes vides (aucune période, aucun événement) ne sont pas imprimées.
  const cols=lists.filter(function(l){return l.items.length}).map(function(l,i){return {title:"LISTE "+(i+1)+" — "+l.title,items:l.items}});
