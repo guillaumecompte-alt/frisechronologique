@@ -97,6 +97,7 @@ body{
       <div class="sheet-menu hidden" id="sheetMenu" role="menu">
         <button class="sheet-option" type="button" role="menuitem" data-sheet="split"><strong>Événements et dates à associer</strong><small>Deux listes mélangées : l’élève retrouve la date de chaque événement.</small></button>
         <button class="sheet-option" type="button" role="menuitem" data-sheet="timeline"><strong>Dates sur la frise</strong><small>Les dates des événements et des périodes sont écrites sur la frise ; l’élève complète le nom des événements, sans liste d’aide.</small></button>
+        <button class="sheet-option" type="button" role="menuitem" data-sheet="timelineList"><strong>Dates sur la frise avec liste événement</strong><small>Comme « Dates sur la frise », avec en dessous la liste mélangée des événements (sans leur date) parmi lesquels l’élève choisit.</small></button>
       </div>
     </div>
     <input type="file" id="importFile" accept=".json,application/json" class="hidden">
@@ -791,17 +792,15 @@ function svgToPng(svgData,filename,okMessage){
 }
 // mode « split » : événements et dates en deux listes mélangées séparément (à associer).
 // mode « timeline » : aucune liste ; les dates des événements et des périodes sont écrites sur la frise.
+// mode « timelineList » : comme « timeline », avec la liste mélangée des noms d'événements (sans date) en dessous.
 function exportBlankWorksheet(mode){
- if(mode==="timeline"){
-  let sheet;
-  try{worksheetMode=true;worksheetDates=true;renderSvg();sheet=readSvg()}
-  finally{worksheetMode=false;worksheetDates=false;renderSvg()}
-  svgToPng(sheet,projectFilename("fiche-vierge-dates-sur-frise.png"),"Fiche vierge élèves exportée.");return;
- }
+ const onTimeline=mode==="timeline"||mode==="timelineList";
  const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtPeriodStart(p)+" — "+fmtPeriodEnd(p)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
- const lists=[{title:"PÉRIODES ET TEMPS CONDENSÉS",items:periods}];
- lists.push({title:"ÉVÉNEMENTS",items:shuffled(state.events.map(function(e){return plainTitle(e.title)}))});
- lists.push({title:"DATES",items:shuffled(state.events.map(function(e){return fmtEventDate(e)}))});
+ const eventNames=shuffled(state.events.map(function(e){return plainTitle(e.title)}));
+ let lists;
+ if(mode==="timeline")lists=[];
+ else if(mode==="timelineList")lists=[{title:"ÉVÉNEMENTS",items:eventNames}];
+ else lists=[{title:"PÉRIODES ET TEMPS CONDENSÉS",items:periods},{title:"ÉVÉNEMENTS",items:eventNames},{title:"DATES",items:shuffled(state.events.map(function(e){return fmtEventDate(e)}))}];
  // Les listes vides (aucune période, aucun événement) ne sont pas imprimées.
  const cols=lists.filter(function(l){return l.items.length}).map(function(l,i){return {title:"LISTE "+(i+1)+" — "+l.title,items:l.items}});
  // Chaque élément est découpé pour tenir dans sa colonne (retrait suspendu après le numéro).
@@ -821,9 +820,9 @@ function exportBlankWorksheet(mode){
  });
  let data;
  try{
-  worksheetMode=true;renderSvg();
-  const y0=layout.H,extraH=98+listH+24;
-  let extra='<rect x="0" y="'+y0+'" width="'+W+'" height="'+extraH+'" fill="#ffffff"/><line x1="35" y1="'+(y0+8)+'" x2="'+(W-35)+'" y2="'+(y0+8)+'" stroke="#e5e4de"/><text x="35" y="'+(y0+40)+'" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#202d43">AIDE POUR COMPLÉTER LA FRISE</text>';
+  worksheetMode=true;worksheetDates=onTimeline;renderSvg();
+  const y0=layout.H,extraH=cols.length?98+listH+24:0;
+  let extra=!cols.length?"":'<rect x="0" y="'+y0+'" width="'+W+'" height="'+extraH+'" fill="#ffffff"/><line x1="35" y1="'+(y0+8)+'" x2="'+(W-35)+'" y2="'+(y0+8)+'" stroke="#e5e4de"/><text x="35" y="'+(y0+40)+'" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#202d43">AIDE POUR COMPLÉTER LA FRISE</text>';
   cols.forEach(function(col){
    const x=col.x;
    extra+='<text x="'+x+'" y="'+(y0+70)+'" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#202d43">'+escapeHtml(col.title)+'</text>';
@@ -835,9 +834,9 @@ function exportBlankWorksheet(mode){
   });
   data=readSvg(extraH,extra);
  }finally{
-  worksheetMode=false;renderSvg();
+  worksheetMode=false;worksheetDates=false;renderSvg();
  }
- svgToPng(data,projectFilename("fiche-vierge-a-associer.png"),"Fiche vierge élèves exportée.")
+ svgToPng(data,projectFilename(mode==="timeline"?"fiche-vierge-dates-sur-frise.png":mode==="timelineList"?"fiche-vierge-dates-sur-frise-avec-liste.png":"fiche-vierge-a-associer.png"),"Fiche vierge élèves exportée.")
 }
 function exportSvg(){downloadBlob(new Blob([readSvg().raw],{type:"image/svg+xml;charset=utf-8"}),projectFilename("svg"));toast("Frise SVG exportée.")}
 function exportPng(){svgToPng(readSvg(),projectFilename("png"),"Frise PNG haute résolution exportée.")}
