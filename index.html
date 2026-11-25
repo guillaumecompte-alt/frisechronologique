@@ -454,12 +454,14 @@ const W=1400,BAND_H=80,HEADER_Y=46,LANE_GAP=12,LABEL_H=42;
 let layout={top:178,bh:BAND_H,H:420};
 // Mesure réelle du texte (même police que la frise), pour que le cadre s'adapte à son contenu.
 const measureCtx=document.createElement("canvas").getContext("2d");
-function textWidth(str,size,weight){measureCtx.font=weight+" "+size+"px Inter, Arial, sans-serif";return measureCtx.measureText(String(str)).width}
+function textWidth(str,size,weight,family){measureCtx.font=weight+" "+size+"px "+(family||"Inter, Arial, sans-serif");return measureCtx.measureText(String(str)).width}
 const LABEL_TEXT_MAX=240,TITLE_LINE_H=15,IMAGE_BLOCK_H=67;
 // Découpe le nom d'un événement en lignes : retours à la ligne saisis, puis retour automatique
 // au-delà de LABEL_TEXT_MAX ; un mot plus long que la largeur maximale est coupé avec un tiret.
-function wrapTitle(title){
- const lines=[],fits=function(t){return textWidth(t,12,750)<=LABEL_TEXT_MAX};
+function wrapTitle(title){return wrapText(title,function(t){return textWidth(t,12,750)<=LABEL_TEXT_MAX})}
+// Découpe générique : « fits » dit si une ligne tient dans la largeur voulue.
+function wrapText(title,fits){
+ const lines=[];
  String(title||"").split(/\r?\n/).forEach(function(para){
   let cur="";
   para.trim().split(/\s+/).filter(Boolean).forEach(function(word){
@@ -621,7 +623,7 @@ function renderSvg(){
 
  // Dates (un clic les masque ou les réaffiche). Masquées, elles restent en filigrane
  // dans l'aperçu pour pouvoir les réactiver, mais disparaissent des exports.
- const hiddenTicks=state.timeline.hiddenDateTicks||[];
+ const hiddenTicks=state.timeline.hiddenDateTicks||[],tickTexts=[];
  ticks.forEach(function(t){
   const y=top+bh+29+t.lane*23,hidden=hiddenTicks.includes(t.key);
   if(hidden&&worksheetMode)return;
@@ -630,7 +632,7 @@ function renderSvg(){
   const ghost=hidden?' opacity=".3" data-ghost="true"':'';
   out.push(line(t.x,top+bh,t.x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'+ghost));
   out.push(line(t.x,top+bh+15,t.x,y-12,'stroke="#a0a7b2" stroke-width="1"'+ghost));
-  out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+escapeHtml(t.key)+'" style="cursor:pointer"'+(hidden?ghost+' text-decoration="line-through"':'')+'><title>'+(hidden?"Cliquer pour réafficher":"Cliquer pour masquer")+'</title>'+escapeHtml(t.label)+'</text>');
+  tickTexts.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" paint-order="stroke" data-date-tick="'+escapeHtml(t.key)+'" style="cursor:pointer"'+(hidden?ghost+' text-decoration="line-through"':'')+'><title>'+(hidden?"Cliquer pour réafficher":"Cliquer pour masquer")+'</title>'+escapeHtml(t.label)+'</text>');
  });
 
  // Traits de rappel d'abord, puis les étiquettes par-dessus.
@@ -640,6 +642,8 @@ function renderSvg(){
   const y1=isBottom?top+bh:top,y2=isBottom?it.y:it.y+it.h;
   out.push(line(it.x,y1,it.x,y2,it.kind==="birth"?'stroke="#ef4036" stroke-width="2.1"':'stroke="#8993a3" stroke-width="1.1"'));
  });
+ // Dates par-dessus les traits de rappel : leur contour blanc les garde lisibles.
+ out.push(tickTexts.join(""));
  labelItems.forEach(function(it){
   const y=it.y;
   if(it.kind==="birth"){
@@ -789,16 +793,34 @@ function exportBlankWorksheet(mode){
  }
  // Les listes vides (aucune période, aucun événement) ne sont pas imprimées.
  const cols=lists.filter(function(l){return l.items.length}).map(function(l,i){return {title:"LISTE "+(i+1)+" — "+l.title,items:l.items}});
- const rows=Math.max(1,Math.max.apply(null,cols.map(function(c){return c.items.length}).concat([0]))),rowHeight=22;
+ // Chaque élément est découpé pour tenir dans sa colonne (retrait suspendu après le numéro).
+ const COL_W=465,LINE_H=16,ITEM_GAP=6,FONT="Arial, sans-serif";
+ let listH=22;
+ cols.forEach(function(col,idx){
+  col.x=35+idx*COL_W;
+  const maxW=(idx<cols.length-1?COL_W-24:W-35-col.x);
+  let y=0;
+  col.rows=col.items.map(function(item,j){
+   const prefix=(j+1)+". ",indent=textWidth(prefix,12,400,FONT);
+   const lines=wrapText(item,function(t){return textWidth(t,12,400,FONT)<=maxW-indent});
+   const row={prefix:prefix,indent:indent,lines:lines,y:y};
+   y+=lines.length*LINE_H+ITEM_GAP;return row;
+  });
+  listH=Math.max(listH,y);
+ });
  let data;
  try{
   worksheetMode=true;renderSvg();
-  const y0=layout.H,extraH=90+rows*rowHeight+30;
+  const y0=layout.H,extraH=98+listH+24;
   let extra='<rect x="0" y="'+y0+'" width="'+W+'" height="'+extraH+'" fill="#ffffff"/><line x1="35" y1="'+(y0+8)+'" x2="'+(W-35)+'" y2="'+(y0+8)+'" stroke="#e5e4de"/><text x="35" y="'+(y0+40)+'" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#202d43">AIDE POUR COMPLÉTER LA FRISE</text>';
-  cols.forEach(function(col,idx){
-   const x=35+idx*465;
+  cols.forEach(function(col){
+   const x=col.x;
    extra+='<text x="'+x+'" y="'+(y0+70)+'" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#202d43">'+escapeHtml(col.title)+'</text>';
-   col.items.forEach(function(item,j){extra+='<text x="'+x+'" y="'+(y0+98+j*rowHeight)+'" font-family="Arial,sans-serif" font-size="12" fill="#202d43">'+(j+1)+'. '+escapeHtml(item)+'</text>'});
+   col.rows.forEach(function(row){
+    const y=y0+98+row.y;
+    extra+='<text x="'+x+'" y="'+y+'" font-family="Arial,sans-serif" font-size="12" fill="#202d43">'+escapeHtml(row.prefix.trim())+'</text>';
+    extra+='<text y="'+y+'" font-family="Arial,sans-serif" font-size="12" fill="#202d43">'+row.lines.map(function(l,i){return '<tspan x="'+(x+row.indent)+'" dy="'+(i?LINE_H:0)+'">'+escapeHtml(l)+'</tspan>'}).join("")+'</text>';
+   });
   });
   data=readSvg(extraH,extra);
  }finally{
