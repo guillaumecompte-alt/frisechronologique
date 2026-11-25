@@ -214,19 +214,31 @@ function applyEventDate(item,dt){
  if(dt.day)item.day=dt.day;else delete item.day;
 }
 // Texte affiché : « 14 juillet 1789 ap. J.-C. », « juillet 1789 ap. J.-C. » ou seulement l'année.
-function fmtEventDate(e){
- const m=Number(e.month)||0,d=Number(e.day)||0;
- if(!m)return fmtYear(e.date,true);
- return (d?(d===1?"1er":d)+" ":"")+MONTHS[m-1]+" "+fmtYear(e.date,true)
+function fmtDateParts(y,month,day){
+ const m=Number(month)||0,d=Number(day)||0;
+ if(!(m>=1&&m<=12))return fmtYear(y,true);
+ return (d?(d===1?"1er":d)+" ":"")+MONTHS[m-1]+" "+fmtYear(y,true)
 }
+function fmtEventDate(e){return fmtDateParts(e.date,e.month,e.day)}
+function fmtPeriodStart(p){return fmtDateParts(p.start,p.startMonth,p.startDay)}
+function fmtPeriodEnd(p){return fmtDateParts(p.end,p.endMonth,p.endDay)}
 // Position sur la frise : l'année, affinée par le mois et le jour (utile sur une frise courte, ex. 1914-1918).
-function eventPosition(e){
- const y=Number(e.date),m=Number(e.month)||0,d=Number(e.day)||0;
- if(!m)return y;
+// Position d'une date sur la frise : l'année, affinée par le mois et le jour.
+// « mid » place un événement au milieu de son jour (ou de son mois) ;
+// sinon la date marque un instant (début du jour, du mois ou de l'année), comme une borne de période.
+function datePos(year,month,day,mid){
+ const y=Number(year),m=Number(month)||0;
+ if(!(m>=1&&m<=12))return y;
+ const dim=daysInMonth(m,y),d=Math.min(Number(day)||0,dim);
  const before=[31,isLeap(y)?29:28,31,30,31,30,31,31,30,31,30,31].slice(0,m-1).reduce(function(a,b){return a+b},0);
- const dayOfYear=before+(d?d-.5:daysInMonth(m,y)/2);
+ const dayOfYear=before+(mid?(d?d-.5:dim/2):(d?d-1:0));
  return y+dayOfYear/(isLeap(y)?366:365)
 }
+function eventPosition(e){return datePos(e.date,e.month,e.day,true)}
+function periodStartPos(p){return datePos(p.start,p.startMonth,p.startDay,false)}
+function periodEndPos(p){return datePos(p.end,p.endMonth,p.endDay,false)}
+// Clé d'une date sous la bande (sert à mémoriser les dates masquées) : l'année seule garde son ancienne clé.
+function dateKey(y,m,d){m=Number(m)||0;d=Number(d)||0;return m?y+"-"+m+"-"+d:String(y)}
 function fmtYear(y,short){
  y=Number(y);
  if(state&&state.timeline&&state.timeline.dateFormat==="relative")return String(y);
@@ -250,7 +262,13 @@ function sanitizeProject(v){
  v.events.forEach(function(e){cleanId(e);e.textColor=safeColor(e.textColor,"#202d43");const img=safeImage(e.image);if(img)e.image=img;else delete e.image});
  v.compressions.forEach(function(c){cleanId(c);c.color=safeColor(c.color,"#66758b")});
  v.timeline.title=String(v.timeline.title||"Ma frise chronologique");v.timeline.start=Number(v.timeline.start);v.timeline.end=Number(v.timeline.end);
- v.periods.forEach(function(p){p.name=String(p.name);p.start=Number(p.start);p.end=Number(p.end)});
+ v.periods.forEach(function(p){
+  p.name=String(p.name);p.start=Number(p.start);p.end=Number(p.end);
+  [["startMonth","startDay",p.start],["endMonth","endDay",p.end]].forEach(function(k){
+   const c=checkEventDate(k[2],p[k[0]],p[k[1]]);
+   if(c.error||!c.month){delete p[k[0]];delete p[k[1]]}else{p[k[0]]=c.month;if(c.day)p[k[1]]=c.day;else delete p[k[1]]}
+  });
+ });
  v.events.forEach(function(e){e.title=String(e.title);e.date=Number(e.date);const c=checkEventDate(e.date,e.month,e.day);if(c.error||!c.month){delete e.month;delete e.day}else{e.month=c.month;if(c.day)e.day=c.day;else delete e.day}});
  v.compressions.forEach(function(c){c.start=Number(c.start);c.end=Number(c.end)});
  if(!Array.isArray(v.timeline.hiddenDateTicks))v.timeline.hiddenDateTicks=[];
@@ -289,7 +307,7 @@ function updateCounts(){
 }
 function renderLists(){
  const defs=[
-  {type:"period",el:"periodList",items:state.periods,title:function(i){return i.name},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color}},
+  {type:"period",el:"periodList",items:state.periods,title:function(i){return i.name},sub:function(i){return fmtPeriodStart(i)+" — "+fmtPeriodEnd(i)},color:function(i){return i.color}},
   {type:"event",el:"eventList",items:state.events,title:function(i){return plainTitle(i.title)},sub:function(i){return fmtEventDate(i)},color:function(){return "#ef4036"}},
   {type:"break",el:"breakList",items:state.compressions,title:function(i){return "Temps condensé"},sub:function(i){return fmtYear(i.start,true)+" — "+fmtYear(i.end,true)},color:function(i){return i.color||"#66758b"}}
  ];
@@ -311,6 +329,32 @@ function field(id,label,value,type,extra){
  const itype=type||"text";
  return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" name="'+id+'" type="'+itype+'" value="'+escapeHtml(value)+'" '+(itype==="number"?'step="1"':'')+' '+(extra||"")+'></div>'
 }
+// Ligne Jour / Mois / Année d'une borne de période (ids : prefix+"Day", prefix+"Month", prefix).
+const PERIOD_DATE_HELP="Jour et mois facultatifs : laisse « — » pour n'afficher que l'année.";
+function periodDateRow(prefix,label,year,month,day){
+ const m=Number(month)||0,d=Number(day)||0;
+ return '<div class="field"><label>'+label+'</label><div class="date-row">'+
+  '<div class="field"><label for="'+prefix+'Day">Jour</label><select id="'+prefix+'Day"'+(m?'':' disabled')+'><option value="">—</option>'+Array.from({length:31},function(_,i){return '<option value="'+(i+1)+'"'+(d===i+1?' selected':'')+'>'+(i+1)+'</option>'}).join("")+'</select></div>'+
+  '<div class="field"><label for="'+prefix+'Month">Mois</label><select id="'+prefix+'Month"><option value="">—</option>'+MONTHS.map(function(n,i){return '<option value="'+(i+1)+'"'+(m===i+1?' selected':'')+'>'+n+'</option>'}).join("")+'</select></div>'+
+  '<div class="field"><label for="'+prefix+'">Année</label><input id="'+prefix+'" type="number" step="1" value="'+escapeHtml(year)+'" required></div>'+
+  '</div></div>'
+}
+// Lit et vérifie les deux bornes d'une période dans le formulaire ; renvoie {start,end} ou {error}.
+function readPeriodDates(){
+ const v=function(id){return document.getElementById(id).value};
+ const a=checkEventDate(v("itemStart"),v("itemStartMonth"),v("itemStartDay"));if(a.error)return {error:"Début : "+a.error};
+ const b=checkEventDate(v("itemEnd"),v("itemEndMonth"),v("itemEndDay"));if(b.error)return {error:"Fin : "+b.error};
+ const pa=datePos(a.year,a.month,a.day,false),pb=datePos(b.year,b.month,b.day,false);
+ if(histOrd(pa)>=histOrd(pb))return {error:"La date de début doit précéder la date de fin."};
+ return {start:a,end:b}
+}
+function applyPeriodDates(item,r){
+ item.start=r.start.year;item.end=r.end.year;
+ [["startMonth","startDay",r.start],["endMonth","endDay",r.end]].forEach(function(k){
+  if(k[2].month)item[k[0]]=k[2].month;else delete item[k[0]];
+  if(k[2].day)item[k[1]]=k[2].day;else delete item[k[1]];
+ });
+}
 function renderEditor(){
  const item=currentItem(),root=document.getElementById("editorContent");
  document.getElementById("editorTitle").textContent=selected.type==="period"?"Modifier une période":selected.type==="event"?"Modifier un événement":"Modifier un temps condensé";
@@ -318,7 +362,9 @@ function renderEditor(){
  let html='<form id="itemForm" data-type="'+selected.type+'" data-id="'+escapeHtml(item.id)+'">';
  if(selected.type==="period"){
   html+=field("itemName","Nom de la période",item.name,"text",'maxlength="100" required');
-  html+='<div class="two-col">'+field("itemStart","Début (année)",item.start,"number",'required')+field("itemEnd","Fin (année)",item.end,"number",'required')+'</div>';
+  html+=periodDateRow("itemStart","Début de la période",item.start,item.startMonth,item.startDay);
+  html+=periodDateRow("itemEnd","Fin de la période",item.end,item.endMonth,item.endDay);
+  html+='<p class="field-help" id="itemPeriodHelp">'+PERIOD_DATE_HELP+'</p>';
   html+='<div class="field"><label>Couleur de la période</label>'+paletteHtml(item.color)+'</div>';
   html+='<div class="field"><label for="itemFillStyle">Remplissage de la période</label><select id="itemFillStyle" name="itemFillStyle"><option value="solid" '+(item.fillStyle!=="hatched"?"selected":"")+'>Couleur pleine</option><option value="hatched" '+(item.fillStyle==="hatched"?"selected":"")+'>Couleur hachurée</option></select></div>';
   html+='<div class="field"><label>Couleur des hachures</label>'+paletteHtml(item.hatchColor||item.color||COLORS[0].value).replace(/data-color=/g,'data-hatch-color=')+'</div>';
@@ -353,7 +399,7 @@ function getScale(){
  const lo=Number(state.timeline.start),hi=Number(state.timeline.end);
  const vals=[lo,hi];
  function add(y){y=Number(y);if(y>=lo&&y<=hi&&Number.isFinite(y))vals.push(y)}
- state.periods.forEach(function(p){add(p.start);add(p.end)});
+ state.periods.forEach(function(p){add(periodStartPos(p));add(periodEndPos(p))});
  state.compressions.forEach(function(c){add(c.start);add(c.end)});
 
  const unique=Array.from(new Set(vals)).sort(function(a,b){return histOrd(a)-histOrd(b)});
@@ -388,7 +434,7 @@ function getScale(){
 // Forme d'une période : rectangle, ou flèche si elle atteint la fin de la frise.
 // Un bord qui touche un temps condensé est souligné de pointillés blancs.
 function pathPeriod(p,scale,top,height){
- const a=Number(p.start),b=Number(p.end),x1=scale.map(a),x2=scale.map(b);
+ const a=periodStartPos(p),b=periodEndPos(p),x1=scale.map(a),x2=scale.map(b);
  if(b<Number(state.timeline.start)||a>Number(state.timeline.end))return "";
  const dottedL=state.compressions.some(function(c){return Number(c.start)===a});
  const dottedR=state.compressions.some(function(c){return Number(c.end)===b});
@@ -476,14 +522,24 @@ function renderSvg(){
  topItems.forEach(function(it){it.y=Math.min(top-22+it.rel,top-8-it.h)});
 
  // 2. Dates sous la bande, sur plusieurs rangées si elles sont proches.
- const candidates=[{y:lo},{y:hi}];
- state.periods.forEach(function(p){candidates.push({y:Number(p.start)},{y:Number(p.end)})});
- state.compressions.forEach(function(p){candidates.push({y:Number(p.start)},{y:Number(p.end)})});
- const seen=new Set();
- const ticks=candidates.filter(function(t){return t.y>=lo&&t.y<=hi&&!seen.has(String(t.y))&&seen.add(String(t.y))}).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
+  // Chaque date porte sa position (y), son texte et sa clé ; à position égale, la date la plus précise l'emporte.
+ function yearTick(y){return {y:Number(y),key:String(Number(y)),label:fmtYear(y,true)}}
+ const candidates=[yearTick(lo),yearTick(hi)];
+ state.periods.forEach(function(p){
+  candidates.push({y:periodStartPos(p),key:dateKey(p.start,p.startMonth,p.startDay),label:fmtPeriodStart(p),precise:!!p.startMonth});
+  candidates.push({y:periodEndPos(p),key:dateKey(p.end,p.endMonth,p.endDay),label:fmtPeriodEnd(p),precise:!!p.endMonth});
+ });
+ state.compressions.forEach(function(p){candidates.push(yearTick(p.start),yearTick(p.end))});
+ const byPos=new Map();
+ candidates.forEach(function(t){
+  if(!(t.y>=lo&&t.y<=hi))return;
+  const k=String(t.y),prev=byPos.get(k);
+  if(!prev||(t.precise&&!prev.precise))byPos.set(k,t);
+ });
+ const ticks=Array.from(byPos.values()).sort(function(a,b){return scale.map(a.y)-scale.map(b.y)});
  const tickLanes=[];
  ticks.forEach(function(t){
-  t.label=fmtYear(t.y,true);t.x=scale.map(t.y);t.w=Math.max(48,t.label.length*5.8+10);
+  t.x=scale.map(t.y);t.w=Math.max(48,t.label.length*5.8+10);
   let lane=0;
   while(tickLanes[lane]&&tickLanes[lane].some(function(q){return Math.abs(q.x-t.x)<(q.w+t.w)/2+7}))lane++;
   (tickLanes[lane]=tickLanes[lane]||[]).push(t);t.lane=lane;
@@ -512,17 +568,17 @@ function renderSvg(){
  out.push(text(68,34,"REPÈRES CHRONOLOGIQUES",'font-size="11" font-weight="800" fill="#818998" letter-spacing="2"'));
 
  // Bande de fond, terminée par une pointe quand aucune période n'atteint la fin.
- const endPeriod=state.periods.find(function(p){return Number(p.start)<hi&&Number(p.end)>=hi});
+ const endPeriod=state.periods.find(function(p){return periodStartPos(p)<hi&&periodEndPos(p)>=hi});
  const x0=scale.x0,x1=scale.x1,mid=top+bh/2;
  if(endPeriod)out.push('<rect x="'+x0+'" y="'+top+'" width="'+(x1-x0)+'" height="'+bh+'" rx="7" fill="#f0eee7" filter="url(#softShadow)"/>');
  else out.push('<path d="M'+(x0+7)+' '+top+' H'+(x1-44)+' L'+x1+' '+mid+' L'+(x1-44)+' '+(top+bh)+' H'+(x0+7)+' Q'+x0+' '+(top+bh)+' '+x0+' '+(top+bh-7)+' V'+(top+7)+' Q'+x0+' '+top+' '+(x0+7)+' '+top+' Z" fill="#f0eee7" filter="url(#softShadow)"/>');
 
  // Périodes et leurs noms.
- state.periods.slice().sort(function(a,b){return histOrd(a.start)-histOrd(b.start)}).forEach(function(p){
-  const px1=Math.max(scale.x0,scale.map(p.start)),px2=Math.min(scale.x1,scale.map(p.end));
+ state.periods.slice().sort(function(a,b){return histOrd(periodStartPos(a))-histOrd(periodStartPos(b))}).forEach(function(p){
+  const px1=Math.max(scale.x0,scale.map(periodStartPos(p))),px2=Math.min(scale.x1,scale.map(periodEndPos(p)));
   if(px2<=px1)return;
   out.push(pathPeriod(p,scale,top,bh));
-  const finalPeriod=Number(p.end)>=hi&&Math.abs(px2-scale.x1)<1,available=px2-px1,px=finalPeriod?px1+available*0.46:px1+available/2;
+  const finalPeriod=periodEndPos(p)>=hi&&Math.abs(px2-scale.x1)<1,available=px2-px1,px=finalPeriod?px1+available*0.46:px1+available/2;
   if(worksheetMode||available<=10)return;
   const sideMargin=Math.min(8,Math.max(3,available*0.12));
   const usableWidth=Math.max(1,available-sideMargin*2-(finalPeriod?3:0));
@@ -567,14 +623,14 @@ function renderSvg(){
  // dans l'aperçu pour pouvoir les réactiver, mais disparaissent des exports.
  const hiddenTicks=state.timeline.hiddenDateTicks||[];
  ticks.forEach(function(t){
-  const y=top+bh+29+t.lane*23,hidden=hiddenTicks.includes(String(t.y));
+  const y=top+bh+29+t.lane*23,hidden=hiddenTicks.includes(t.key);
   if(hidden&&worksheetMode)return;
   const anchor=t.x<t.w/2+8?"start":t.x>W-t.w/2-8?"end":"middle";
   const tx=anchor==="start"?Math.max(8,t.x):anchor==="end"?Math.min(W-8,t.x):t.x;
   const ghost=hidden?' opacity=".3" data-ghost="true"':'';
   out.push(line(t.x,top+bh,t.x,top+bh+15,'stroke="#7b8494" stroke-width="1.2"'+ghost));
   out.push(line(t.x,top+bh+15,t.x,y-12,'stroke="#a0a7b2" stroke-width="1"'+ghost));
-  out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+t.y+'" style="cursor:pointer"'+(hidden?ghost+' text-decoration="line-through"':'')+'><title>'+(hidden?"Cliquer pour réafficher":"Cliquer pour masquer")+'</title>'+escapeHtml(t.label)+'</text>');
+  out.push('<text x="'+tx+'" y="'+y+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="#4f5b70" data-date-tick="'+escapeHtml(t.key)+'" style="cursor:pointer"'+(hidden?ghost+' text-decoration="line-through"':'')+'><title>'+(hidden?"Cliquer pour réafficher":"Cliquer pour masquer")+'</title>'+escapeHtml(t.label)+'</text>');
  });
 
  // Traits de rappel d'abord, puis les étiquettes par-dessus.
@@ -659,10 +715,10 @@ function saveItemForm(ev){
  const item=arr.find(function(x){return x.id===id});if(!item)return;
  const value=function(id){return document.getElementById(id)?.value};
  if(type==="period"){
-  const name=value("itemName").trim(),start=Number(value("itemStart")),end=Number(value("itemEnd"));
+  const name=value("itemName").trim(),dates=readPeriodDates();
   if(!name){toast("Ajoute un nom à cette période.",true);return}
-  if(!validYear(start)||!validYear(end)||start>=end){toast("Dates invalides : il faut deux années différentes, sans année 0, et un début avant la fin.",true);return}
-  item.name=name;item.start=start;item.end=end;item.fillStyle=value("itemFillStyle")||"solid";
+  if(dates.error){toast(dates.error,true);return}
+  item.name=name;applyPeriodDates(item,dates);item.fillStyle=value("itemFillStyle")||"solid";
   item.hatchColor=value("itemHatchColor")||item.hatchColor||item.color||"#66758b";
   item.hatchBackground=value("itemHatchBackground")||item.hatchBackground||"#f4f1eb";
   const active=f.querySelector("[data-color].active");if(active)item.color=active.dataset.color;
@@ -723,7 +779,7 @@ function svgToPng(svgData,filename,okMessage){
 // mode « split » : événements et dates en deux listes mélangées séparément (à associer).
 // mode « paired » : une seule liste d'événements, chacun suivi de sa date.
 function exportBlankWorksheet(mode){
- const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
+ const periods=shuffled(state.periods.map(function(p){return p.name+" ("+fmtPeriodStart(p)+" — "+fmtPeriodEnd(p)+")"}).concat(state.compressions.map(function(p){return (p.name||"Temps condensé")+" ("+fmtYear(p.start,true)+" — "+fmtYear(p.end,true)+")"})));
  const lists=[{title:"PÉRIODES ET TEMPS CONDENSÉS",items:periods}];
  if(mode==="paired"){
   lists.push({title:"ÉVÉNEMENTS ET LEURS DATES",items:shuffled(state.events.map(function(e){return plainTitle(e.title)+" — "+fmtEventDate(e)}))});
@@ -756,7 +812,7 @@ function validateImport(v){
  if(!v||!v.timeline||!Array.isArray(v.periods)||!Array.isArray(v.events)||!Array.isArray(v.compressions))throw new Error("Le fichier ne correspond pas à un projet Frise Studio.");
  const s=Number(v.timeline.start),e=Number(v.timeline.end);
  if(!validYear(s)||!validYear(e)||s>=e)throw new Error("Les dates de la frise sont invalides.");
- v.periods.forEach(function(p){if(!p.name||!validYear(Number(p.start))||!validYear(Number(p.end))||Number(p.start)>=Number(p.end))throw new Error("Une période comporte des dates invalides.")});
+ v.periods.forEach(function(p){if(!p.name||!validYear(Number(p.start))||!validYear(Number(p.end))||histOrd(periodStartPos(p))>=histOrd(periodEndPos(p)))throw new Error("Une période comporte des dates invalides.")});
  v.events.forEach(function(x){if(!x.title||!validYear(Number(x.date)))throw new Error("Un événement comporte une date invalide.")});
  v.compressions.forEach(function(x){if(!validYear(Number(x.start))||!validYear(Number(x.end))||Number(x.start)>=Number(x.end))throw new Error("Un temps condensé comporte des dates invalides.")});
  return true
@@ -816,9 +872,14 @@ document.getElementById("editorContent").addEventListener("click",function(ev){c
   if(el.id==="itemFillStyle")item.fillStyle=el.value;
   if(el.matches("[data-hatch-color]"))item.hatchColor=el.dataset.hatchColor;
   if(el.matches("[data-hatch-background]"))item.hatchBackground=el.dataset.hatchBackground;
-  if(el.id==="itemStart"||el.id==="itemEnd"){
-   const start=Number(document.getElementById("itemStart").value),end=Number(document.getElementById("itemEnd").value);
-   if(el.value!==""&&validYear(start)&&validYear(end)&&start<end){item.start=start;item.end=end}
+  if(/^item(Start|End)(Day|Month)?$/.test(el.id)){
+   ["itemStart","itemEnd"].forEach(function(prefix){
+    const daySel=document.getElementById(prefix+"Day");
+    if(!document.getElementById(prefix+"Month").value){daySel.value="";daySel.disabled=true}else daySel.disabled=false;
+   });
+   const r=readPeriodDates(),help=document.getElementById("itemPeriodHelp");
+   if(r.error){help.textContent=r.error;help.classList.add("warn")}
+   else{help.textContent=PERIOD_DATE_HELP;help.classList.remove("warn");applyPeriodDates(item,r)}
   }
  }else if(type==="event"){
   if(el.id==="itemName")item.title=el.value;
@@ -857,7 +918,8 @@ function svgPoint(evt){
  return pt.matrixTransform(matrix.inverse())
 }
 function inBand(pt){return !!pt&&pt.y>=layout.top&&pt.y<=layout.top+layout.bh}
-function inverseScale(x){
+// exact=true renvoie une position fractionnaire (même convention que datePos) au lieu d'une année entière.
+function inverseScale(x,exact){
  const scale=getScale(),segments=scale.intervals;
  if(!segments||x<=scale.x0)return Number(state.timeline.start);
  if(x>=scale.x1)return Number(state.timeline.end);
@@ -865,6 +927,7 @@ function inverseScale(x){
  const ratio=(x-seg.x0)/(seg.x1-seg.x0||1);
  const ordinal=seg.oa+ratio*(seg.ob-seg.oa);
  // Ordinal 0 = 1 av. J.-C. ; ordinal n > 0 = n ap. J.-C. ; ordinal n < 0 = (n-1) av. J.-C.
+ if(exact){const pos=ordinal>=1?ordinal:ordinal-1;return Math.max(Number(state.timeline.start),Math.min(Number(state.timeline.end)+1,pos))}
  const o=Math.round(ordinal),year=o<=0?o-1:o;
  return Math.max(Number(state.timeline.start),Math.min(Number(state.timeline.end),year))
 }
@@ -892,8 +955,8 @@ timelineSvg.addEventListener("pointermove",function(e){
   if(t.closest("[data-event-label]")||t.closest("[data-birth-label]"))cursor="grab";
   else if(t.closest("[data-event-dot]")||t.closest("[data-date-tick]")||t.closest("[data-era]"))cursor="pointer";
   else if(inBand(pt)){
-   const yr=inverseScale(pt.x);
-   if(state.periods.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr})||state.compressions.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr}))cursor="pointer";
+   const yr=inverseScale(pt.x,true);
+   if(state.periods.some(function(p){return periodStartPos(p)<=yr&&periodEndPos(p)>=yr})||state.compressions.some(function(p){return Number(p.start)<=yr&&Number(p.end)>=yr}))cursor="pointer";
   }
   timelineSvg.style.cursor=cursor;return;
  }
@@ -938,8 +1001,8 @@ timelineSvg.addEventListener("click",function(e){
  const ev=e.target.closest("[data-event-label]")||e.target.closest("[data-event-dot]");
  if(ev){selectItem("event",ev.getAttribute("data-event-label")||ev.getAttribute("data-event-dot"));toast("Événement sélectionné : personnalise-le dans le panneau.");return}
  const pt=svgPoint(e);if(!inBand(pt))return;
- const year=inverseScale(pt.x);
- const period=state.periods.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year});
+ const year=inverseScale(pt.x,true);
+ const period=state.periods.slice().reverse().find(function(p){return periodStartPos(p)<=year&&periodEndPos(p)>=year});
  if(period){selectItem("period",period.id);toast("Période sélectionnée : personnalise-la dans le panneau.");return}
  const compressed=state.compressions.slice().reverse().find(function(p){return Number(p.start)<=year&&Number(p.end)>=year});
  if(compressed){selectItem("break",compressed.id);toast("Temps condensé sélectionné : personnalise-le dans le panneau.");return}
