@@ -671,9 +671,10 @@ function renderSvg(){
    out.push('<text x="'+cx+'" y="'+ty+'" text-anchor="middle" font-size="12" font-weight="750" fill="'+color+'">'+it.lines.map(function(l,i){return '<tspan x="'+cx+'" dy="'+(i?TITLE_LINE_H:0)+'">'+escapeHtml(l)+'</tspan>'}).join("")+'</text>');
    out.push(text(cx,ty+(it.lines.length-1)*TITLE_LINE_H+18,it.dateText,'text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'"'));
   }else if(worksheetDates){
-   const ty=y+(e.image?IMAGE_BLOCK_H:0)+16,cx=bx+it.w/2,lineY=ty+(it.lines.length-1)*TITLE_LINE_H+3;
+   // La date d'abord, puis la ligne pointillée sur laquelle l'élève écrit le nom de l'événement.
+   const top0=y+(e.image?IMAGE_BLOCK_H:0),cx=bx+it.w/2,lineY=y+it.h-9;
+   out.push(text(cx,top0+16,it.dateText,'text-anchor="middle" font-size="12" font-weight="700" fill="#202d43"'));
    out.push(line(bx+12,lineY,bx+it.w-12,lineY,'stroke="#c9ccd2" stroke-width="1" stroke-dasharray="3 3"'));
-   out.push(text(cx,lineY+17,it.dateText,'text-anchor="middle" font-size="12" font-weight="700" fill="#202d43"'));
   }
   out.push('<rect x="'+bx+'" y="'+y+'" width="'+it.w+'" height="'+it.h+'" rx="6" fill="transparent" data-event-label="'+id+'" style="cursor:grab;pointer-events:all"/>');
  });
